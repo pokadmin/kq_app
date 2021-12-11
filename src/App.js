@@ -1,44 +1,134 @@
-import './App.css';
-// import { useTable } from 'react-table'
-import React, {Component} from 'react';
+import React from 'react'
+import styled from 'styled-components'
+import {useTable} from 'react-table'
 import {readRemoteFile} from "react-papaparse";
 
-class App extends Component {
-    constructor(props) {
-        // Call super class
-        super(props);
+const Styles = styled.div`
+  padding: 1rem;
 
-        // Bind this to function updateData (This eliminates the error)
-        this.updateData = this.updateData.bind(this);
+  table {
+    border-spacing: 0;
+    border: 1px solid black;
+
+    tr {
+      :last-child {
+        td {
+          border-bottom: 0;
+        }
+      }
     }
 
-    q1_url = "https://raw.githubusercontent.com/pokadmin/kq_app/t4_import_data_and_view/src/data/cleaned_questions_set_1.tsv"
-    question_set_urls = [this.q1_url]
+    th,
+    td {
+      margin: 0;
+      padding: 0.5rem;
+      border-bottom: 1px solid black;
+      border-right: 1px solid black;
 
-    componentDidMount() {
-        readRemoteFile(this.question_set_urls[0], {
-            complete: this.updateData
-        });
+      :last-child {
+        border-right: 0;
+      }
     }
+  }
+`
 
-    updateData(result) {
-        const data = result.data;
-        // Here this is available and we can call this.setState (since it's binded in the constructor)
-        this.setState({data: data}); // or shorter ES syntax: this.setState({ data });
-        console.debug(data)
-        console.log(data)
-    }
+function Table({columns, data}) {
+    // Use the state and functions returned from useTable to build your UI
+    const {
+        getTableProps,
+        getTableBodyProps,
+        headerGroups,
+        rows,
+        prepareRow,
+    } = useTable({
+        columns,
+        data,
+    })
 
-
-    render() {
-        return (
-            <div className="App">
-                <header className="App-header">
-
-                </header>
-            </div>
-        );
-    }
+    // Render the UI for your table
+    return (
+        <table {...getTableProps()}>
+            <thead>
+            {headerGroups.map(headerGroup => (
+                <tr {...headerGroup.getHeaderGroupProps()}>
+                    {headerGroup.headers.map(column => (
+                        <th {...column.getHeaderProps()}>{column.render('Header')}</th>
+                    ))}
+                </tr>
+            ))}
+            </thead>
+            <tbody {...getTableBodyProps()}>
+            {rows.map((row, i) => {
+                prepareRow(row)
+                return (
+                    <tr {...row.getRowProps()}>
+                        {row.cells.map(cell => {
+                            return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
+                        })}
+                    </tr>
+                )
+            })}
+            </tbody>
+        </table>
+    )
 }
 
-export default App;
+function App() {
+    const headerNames = ["0", "1", "2", "3", "4", "5", "6", "1b", "2b", "Explanation", "Link", "Contributor", "Verifier", "Verified"]
+    const columns = React.useMemo(
+        () => [
+
+            {
+
+                Header: 'Question/Answers',
+                columns: [
+                    {
+                        Header: headerNames[0],
+                        accessor: headerNames[0],
+                    },
+                    {
+                        Header: headerNames[1],
+                        accessor: headerNames[1],
+                    },
+                    {
+                        Header: headerNames[2],
+                        accessor: headerNames[2],
+                    },
+                    {
+                        Header: headerNames[3],
+                        accessor: headerNames[3],
+                    },
+                    {
+                        Header: headerNames[4],
+                        accessor: headerNames[4],
+                    },
+                    {
+                        Header: headerNames[5],
+                        accessor: headerNames[5],
+                    },
+                ],
+            },
+        ],
+        []
+    )
+    const [rows, setRows] = React.useState([]);
+    React.useEffect(() => {
+        readRemoteFile('https://raw.githubusercontent.com/pokadmin/kq_app/main/src/data/cleaned_questions_set_1.tsv', {
+            complete: (results) => {
+                console.log('Results:', results);
+                setRows(results.data);
+            },
+        })
+    }, []);
+    console.log(rows);
+
+
+    return (
+
+        <Styles>
+            <Table columns={columns} data={rows}/>
+        </Styles>
+    )
+}
+
+export default App
