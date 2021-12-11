@@ -155,8 +155,9 @@ function Table({ columns, data }) {
 
 function App() {
     const q1_url  ="https://raw.githubusercontent.com/pokadmin/kq_app/main/src/data/cleaned_questions_set_1.tsv"
-    const question_set_urls = [q1_url]
-    const headerNames = ["Question", "1", "2", "3", "4", "5", "6", "1b", "2b", "Explanation", "Link", "Contributor", "Verifier", "Verified"]
+    const q2_url_local ="http://localhost:3000/data/cleaned_questions_set_1.tsv"
+    const question_set_urls = [q1_url,q2_url_local]
+    const headerNames = ["0", "1", "2", "3", "4", "5", "6", "1b", "2b", "Explanation", "Link", "Contributor", "Verifier", "Verified"]
     const columns = React.useMemo(
         () => [
 
@@ -199,7 +200,7 @@ function App() {
     )
     const [rows, setRows] = React.useState([]);
     React.useEffect(() => {
-        readRemoteFile(question_set_urls[0], {
+        readRemoteFile(question_set_urls[1], {
             complete: (results) => {
                 console.log('Results:', results);
                 setRows(results.data);
