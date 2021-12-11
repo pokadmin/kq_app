@@ -153,7 +153,9 @@ function Table({columns, data}) {
                         defaultValue={pageIndex + 1}
                         onChange={e => {
                             const page = e.target.value ? Number(e.target.value) - 1 : 0
-                            gotoPage(page)
+                            if (visibleColumns[e.target.value].id ===1)
+                                gotoPage(page)
+
                         }}
                         style={{width: '100px'}}
                     />
