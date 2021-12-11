@@ -12,7 +12,7 @@ class App extends Component {
         this.updateData = this.updateData.bind(this);
     }
 
-    q1_url = "https://raw.githubusercontent.com/pokadmin/kq_app/t4_import_data_and_view/src/data/cleaned_questions_set_1.tsv"
+    q1_url = "https://raw.githubusercontent.com/pokadmin/kq_app/main/src/data/cleaned_questions_set_1.tsv"
     question_set_urls = [this.q1_url]
 
     componentDidMount() {
