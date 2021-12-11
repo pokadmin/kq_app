@@ -1,8 +1,6 @@
-import React, {useState} from 'react'
+import React from 'react'
 import styled from 'styled-components'
 import {useTable} from 'react-table'
-
-import makeData from './makeData'
 import {readRemoteFile} from "react-papaparse";
 
 const Styles = styled.div`
@@ -76,15 +74,15 @@ function Table({columns, data}) {
 }
 
 function App() {
-    const headerNames = ["0","1","2","3","4","5","6","1b","2b","Explanation","Link","Contributor","Verifier","Verified"]
+    const headerNames = ["0", "1", "2", "3", "4", "5", "6", "1b", "2b", "Explanation", "Link", "Contributor", "Verifier", "Verified"]
     const columns = React.useMemo(
         () => [
 
             {
-                
+
                 Header: 'Question/Answers',
                 columns: [
-                     {
+                    {
                         Header: headerNames[0],
                         accessor: headerNames[0],
                     },
@@ -93,19 +91,19 @@ function App() {
                         accessor: headerNames[1],
                     },
                     {
-                       Header: headerNames[2],
+                        Header: headerNames[2],
                         accessor: headerNames[2],
                     },
                     {
-                         Header: headerNames[3],
+                        Header: headerNames[3],
                         accessor: headerNames[3],
                     },
                     {
-                         Header: headerNames[4],
+                        Header: headerNames[4],
                         accessor: headerNames[4],
                     },
                     {
-                         Header: headerNames[5],
+                        Header: headerNames[5],
                         accessor: headerNames[5],
                     },
                 ],
@@ -124,7 +122,6 @@ function App() {
     }, []);
     console.log(rows);
 
-    const data = React.useMemo(() => makeData(20), [])
 
     return (
 
