@@ -155,7 +155,6 @@ function Table({columns, data}) {
                             const page = e.target.value ? Number(e.target.value) - 1 : 0
                             if (visibleColumns[e.target.value].id ===1)
                                 gotoPage(page)
-
                         }}
                         style={{width: '100px'}}
                     />
