@@ -156,7 +156,7 @@ function Table({ columns, data }) {
 function App() {
     const q1_url  ="https://raw.githubusercontent.com/pokadmin/kq_app/main/src/data/cleaned_questions_set_1.tsv"
     const question_set_urls = [q1_url]
-    const headerNames = ["0", "1", "2", "3", "4", "5", "6", "1b", "2b", "Explanation", "Link", "Contributor", "Verifier", "Verified"]
+    const headerNames = ["Question", "1", "2", "3", "4", "5", "6", "1b", "2b", "Explanation", "Link", "Contributor", "Verifier", "Verified"]
     const columns = React.useMemo(
         () => [
 
