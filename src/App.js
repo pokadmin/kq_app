@@ -59,7 +59,7 @@ function Table({
 
                }) {
     // Use the state and functions returned from useTable to build your UI
-    let {
+    const {
         getTableProps,
         getTableBodyProps,
         headerGroups,
@@ -92,17 +92,17 @@ function Table({
     const randomizeColumns = () => {
         let question_item = visibleColumns[0]
         let random_order = shuffle(visibleColumns.map(d => d.id))
-      // We shuffled all items, good cause we want random order. But we want the question first. Swapp
+        // We shuffled all items, good cause we want random order. But we want the question first. Swapp
         let question_item_random_index = random_order.indexOf(question_item.id)
         let non_question_item_at_0 = random_order[0]
         random_order[0] = "0"
-        random_order[question_item_random_index]=non_question_item_at_0
-        visibleColumns = random_order
-        setColumnOrder(visibleColumns)
+        random_order[question_item_random_index] = non_question_item_at_0
+        setColumnOrder(random_order)
     }
 
     function my_nextPage() {
-        return undefined;
+        randomizeColumns();
+        return nextPage();
     }
 
     // Render the UI for your table
@@ -115,11 +115,10 @@ function Table({
           {JSON.stringify(
               {
                   pageIndex,
-                  pageSize,
                   pageCount,
-                  canNextPage,
-                  canPreviousPage,
-                  answerStatus,
+              //   canNextPage,
+              //   canPreviousPage,
+              //   answerStatus,
               },
               null,
               2
@@ -246,7 +245,7 @@ class App extends Component {
 
                 {
 
-                    Header: 'Question/Answers',
+                    Header: 'Click in the row below in the Header for the correct answer!',
                     columns: [
                         {
                             accessor: headerNames[0],
@@ -309,7 +308,15 @@ class App extends Component {
                                this.state.rows
                            }
                        getHeaderProps={column => ({
-                           onClick: () => alert(("1" === String(column.id)) ? String(column.id) + " is Correct!" : "is WRONG!")
+
+                           onClick: () => {
+                               alert(("1" === String(column.id)) ? String(column.id) + " is Correct!" : String(column.id) + " is WRONG!")
+                           },
+                           style:
+                               {
+                                   background: (("0" === String(column.id)) ? 'rgba(0,0,0,.4)' : 'rgba(0,0,0,.1)'),
+                               }
+
                        })}
                        getColumnProps={column => ({
                            onClick: () => alert('Column!'),
@@ -327,20 +334,6 @@ class App extends Component {
                        })}
                 />
 
-                <select value="test" name="select List" id="selectList" onChange={this.onAnswerSelected}>
-                    <option value="0">Select Answer</option>
-                    <option value="1">Answer 1</option>
-                    <option value="2">Answer 2</option>
-                    <option value="3">Answer 3</option>
-                    <option value="4">Answer 4</option>
-                    <option value="5">Answer 5</option>
-                    <option value="6">Answer 6</option>
-                </select>
-                <div>
-                    <h1>You selected {this.state.answerStatus}:</h1>
-                    <h1> That result is {(String(this.state.correctIndex) === "1") ? "Correct!" : "WRONG!"}!!!</h1>
-
-                </div>
             </Styles>
         )
     }
