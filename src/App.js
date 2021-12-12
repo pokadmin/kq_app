@@ -270,7 +270,8 @@ class App extends Component {
                                this.state.rows
                            }
                 />
-                <select value="test" name="selectList" id="selectList" onChange={this.onAnswerSelected}>
+                <select value="test" name="select List" id="selectList" onChange={this.onAnswerSelected}>
+                    <option value="0">Select Answer</option>
                     <option value="1">Answer 1</option>
                     <option value="2">Answer 2</option>
                     <option value="3">Answer 3</option>
@@ -279,7 +280,8 @@ class App extends Component {
                     <option value="6">Answer 6</option>
                 </select>
                 <div>
-      <h1>Which service are you interested in {this.state.answerStatus}?</h1>
+      <h1>You selected {this.state.answerStatus}:</h1>
+      <h1> That result is {("1" === this.state.answerStatus) ? "Correct!" : "WRONG!"}!!!</h1>
 
                 </div>
             </Styles>
