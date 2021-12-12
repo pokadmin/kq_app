@@ -2,6 +2,7 @@ import React, {Component} from 'react'
 import styled from 'styled-components'
 import {readRemoteFile} from "react-papaparse";
 import {useColumnOrder, usePagination, useTable} from 'react-table'
+import * as PropType from "react-table/src/sortTypes";
 
 const Styles = styled.div`
   padding: 1rem;
@@ -42,36 +43,36 @@ function shuffle(arr) {
 }
 
 function Table({columns, data}) {
-        // Use the state and functions returned from useTable to build your UI
-        const {
-            getTableProps,
-            getTableBodyProps,
-            headerGroups,
-            prepareRow,
-            page, // Instead of using 'rows', we'll use page,
-            // which has only the rows for the active page
+    // Use the state and functions returned from useTable to build your UI
+    const {
+        getTableProps,
+        getTableBodyProps,
+        headerGroups,
+        prepareRow,
+        page, // Instead of using 'rows', we'll use page,
+        // which has only the rows for the active page
 
-            // The rest of these things are super handy, too ;)
-            canPreviousPage,
-            canNextPage,
-            pageOptions,
-            pageCount,
-            gotoPage,
-            nextPage,
-            previousPage,
-            setPageSize,
-            setColumnOrder,
-            visibleColumns,
-            state: {pageIndex, pageSize, answerStatus},
-        } = useTable(
-            {
-                columns,
-                data,
-                initialState: {pageIndex: 2, pageSize: 1, answerStatus: "None"}
-            },
-            useColumnOrder,
-            usePagination
-        )
+        // The rest of these things are super handy, too ;)
+        canPreviousPage,
+        canNextPage,
+        pageOptions,
+        pageCount,
+        gotoPage,
+        nextPage,
+        previousPage,
+        setPageSize,
+        setColumnOrder,
+        visibleColumns,
+        state: {pageIndex, pageSize, answerStatus},
+    } = useTable(
+        {
+            columns,
+            data,
+            initialState: {pageIndex: 2, pageSize: 1}
+        },
+        useColumnOrder,
+        usePagination
+    )
 
     const randomizeColumns = () => {
         setColumnOrder(shuffle(visibleColumns.map(d => d.id)))
@@ -185,8 +186,16 @@ class App extends Component {
         rows: [],
         columns: [],
         data: [],
-        answerStatus: "Not Set"
+        answerStatus:"Initial value"
     }
+    static propTypes = {
+    answerStatus: PropType.string,
+  }
+   constructor(props) {
+        super(props);
+
+    }
+
 
     componentDidMount() {
 
@@ -241,9 +250,12 @@ class App extends Component {
         })
     }
 
-    handleAnswer = e => {
-        if (e)
-            this.setState({answer: e.target.value});
+    onAnswerSelected = e => {
+        if (e.target.value) {
+            const answerStatus_local = String(e.target.value)
+            this.setState({answerStatus:answerStatus_local});
+        }
+
     };
 
     render() {
@@ -258,6 +270,18 @@ class App extends Component {
                                this.state.rows
                            }
                 />
+                <select value="test" name="selectList" id="selectList" onChange={this.onAnswerSelected}>
+                    <option value="1">Answer 1</option>
+                    <option value="2">Answer 2</option>
+                    <option value="3">Answer 3</option>
+                    <option value="4">Answer 4</option>
+                    <option value="5">Answer 5</option>
+                    <option value="6">Answer 6</option>
+                </select>
+                <div>
+      <h1>Which service are you interested in {this.state.answerStatus}?</h1>
+
+                </div>
             </Styles>
         )
     }
