@@ -2,10 +2,14 @@ import React, {Component} from 'react'
 import styled from 'styled-components'
 import {readRemoteFile} from "react-papaparse";
 import {useColumnOrder, usePagination, useTable} from 'react-table'
-import * as PropType from "react-table/src/sortTypes";
 
 const Styles = styled.div`
   padding: 1rem;
+  
+  .user {
+    background-color: blue;
+    color: white;
+  }
   table {
     border-spacing: 0;
     border: 1px solid black;
@@ -42,9 +46,20 @@ function shuffle(arr) {
     return shuffled
 }
 
-function Table({columns, data}) {
+// Create a default prop getter
+const defaultPropGetter = () => ({})
+
+function Table({
+                   columns,
+                   data,
+                   getHeaderProps = defaultPropGetter,
+                   getColumnProps = defaultPropGetter,
+                   getRowProps = defaultPropGetter,
+                   getCellProps = defaultPropGetter
+
+               }) {
     // Use the state and functions returned from useTable to build your UI
-    const {
+    let {
         getTableProps,
         getTableBodyProps,
         headerGroups,
@@ -68,20 +83,35 @@ function Table({columns, data}) {
         {
             columns,
             data,
-            initialState: {pageIndex: 2, pageSize: 1}
+            initialState: {pageIndex: 2, pageSize: 1, answerStatus: "None"}
         },
         useColumnOrder,
         usePagination
     )
-
+    // eslint-disable-next-line no-unused-vars
     const randomizeColumns = () => {
-        setColumnOrder(shuffle(visibleColumns.map(d => d.id)))
+        let question_item = visibleColumns[0]
+        let random_order = shuffle(visibleColumns.map(d => d.id))
+      // We shuffled all items, good cause we want random order. But we want the question first. Swapp
+        let question_item_random_index = random_order.indexOf(question_item.id)
+        let non_question_item_at_0 = random_order[0]
+        random_order[0] = "0"
+        random_order[question_item_random_index]=non_question_item_at_0
+        visibleColumns = random_order
+        setColumnOrder(visibleColumns)
     }
+
+    function my_nextPage() {
+        return undefined;
+    }
+
     // Render the UI for your table
     return (
         <>
       <pre>
+
         <code>
+
           {JSON.stringify(
               {
                   pageIndex,
@@ -103,7 +133,17 @@ function Table({columns, data}) {
                 {headerGroups.map(headerGroup => (
                     <tr {...headerGroup.getHeaderGroupProps()}>
                         {headerGroup.headers.map(column => (
-                            <th {...column.getHeaderProps()}>{column.render('Header')}</th>
+                            <th
+                                {...column.getHeaderProps([
+                                    {
+                                        className: column.className,
+                                        style: column.style,
+                                    },
+                                    getColumnProps(column),
+                                    getHeaderProps(column),
+                                ])}
+                            >
+                                {column.render('Header')}</th>
                         ))}
                     </tr>
                 ))}
@@ -134,7 +174,7 @@ function Table({columns, data}) {
                     {'<'}
                 </button>
                 {' '}
-                <button onClick={() => nextPage()} disabled={!canNextPage}>
+                <button onClick={() => my_nextPage()} disabled={!canNextPage}>
                     {'>'}
                 </button>
                 {' '}
@@ -180,22 +220,20 @@ function Table({columns, data}) {
     )
 }
 
+// Components / Classes are better...
+// How to convert : https://www.digitalocean.com/community/tutorials/five-ways-to-convert-react-class-components-to-functional-components-with-react-hooks
 class App extends Component {
     state = {
         // initial state
         rows: [],
         columns: [],
         data: [],
-        answerStatus:"Initial value"
-    }
-    static propTypes = {
-    answerStatus: PropType.string,
-  }
-   constructor(props) {
-        super(props);
+        potentialAnswers: [],
+        correctIndex: -1,
+        correctAnswer: "correctAnswer initial state",
+        answerStatus: "answerStatus initial state"
 
     }
-
 
     componentDidMount() {
 
@@ -248,18 +286,19 @@ class App extends Component {
                 });
             },
         })
+
+
     }
 
     onAnswerSelected = e => {
         if (e.target.value) {
             const answerStatus_local = String(e.target.value)
-            this.setState({answerStatus:answerStatus_local});
+            this.setState({answerStatus: answerStatus_local});
         }
 
     };
 
     render() {
-
         return (
             <Styles>
                 <Table columns={
@@ -269,7 +308,25 @@ class App extends Component {
                            {
                                this.state.rows
                            }
+                       getHeaderProps={column => ({
+                           onClick: () => alert(("1" === String(column.id)) ? String(column.id) + " is Correct!" : "is WRONG!")
+                       })}
+                       getColumnProps={column => ({
+                           onClick: () => alert('Column!'),
+                       })}
+                       getRowProps={row => ({
+                           style: {
+                               background: row.index % 2 === 0 ? 'rgba(0,0,0,.1)' : 'white',
+                           },
+                       })}
+                       getCellProps={cellInfo => ({
+                           style: {
+                               backgroundColor: `hsl(${120 * ((120 - cellInfo.value) / 120) * -1 +
+                               120}, 100%, 67%)`,
+                           },
+                       })}
                 />
+
                 <select value="test" name="select List" id="selectList" onChange={this.onAnswerSelected}>
                     <option value="0">Select Answer</option>
                     <option value="1">Answer 1</option>
@@ -280,8 +337,8 @@ class App extends Component {
                     <option value="6">Answer 6</option>
                 </select>
                 <div>
-      <h1>You selected {this.state.answerStatus}:</h1>
-      <h1> That result is {("1" === this.state.answerStatus) ? "Correct!" : "WRONG!"}!!!</h1>
+                    <h1>You selected {this.state.answerStatus}:</h1>
+                    <h1> That result is {(String(this.state.correctIndex) === "1") ? "Correct!" : "WRONG!"}!!!</h1>
 
                 </div>
             </Styles>
