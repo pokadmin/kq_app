@@ -42,36 +42,36 @@ function shuffle(arr) {
 }
 
 function Table({columns, data}) {
-    // Use the state and functions returned from useTable to build your UI
-    const {
-        getTableProps,
-        getTableBodyProps,
-        headerGroups,
-        prepareRow,
-        page, // Instead of using 'rows', we'll use page,
-        // which has only the rows for the active page
+        // Use the state and functions returned from useTable to build your UI
+        const {
+            getTableProps,
+            getTableBodyProps,
+            headerGroups,
+            prepareRow,
+            page, // Instead of using 'rows', we'll use page,
+            // which has only the rows for the active page
 
-        // The rest of these things are super handy, too ;)
-        canPreviousPage,
-        canNextPage,
-        pageOptions,
-        pageCount,
-        gotoPage,
-        nextPage,
-        previousPage,
-        setPageSize,
-        setColumnOrder,
-        visibleColumns,
-        state: {pageIndex, pageSize, answerStatus},
-    } = useTable(
-        {
-            columns,
-            data,
-            initialState: {pageIndex: 2, pageSize: 1, answerStatus: "None"}
-        },
-        useColumnOrder,
-        usePagination
-    )
+            // The rest of these things are super handy, too ;)
+            canPreviousPage,
+            canNextPage,
+            pageOptions,
+            pageCount,
+            gotoPage,
+            nextPage,
+            previousPage,
+            setPageSize,
+            setColumnOrder,
+            visibleColumns,
+            state: {pageIndex, pageSize, answerStatus},
+        } = useTable(
+            {
+                columns,
+                data,
+                initialState: {pageIndex: 2, pageSize: 1, answerStatus: "None"}
+            },
+            useColumnOrder,
+            usePagination
+        )
 
     const randomizeColumns = () => {
         setColumnOrder(shuffle(visibleColumns.map(d => d.id)))
@@ -154,9 +154,7 @@ function Table({columns, data}) {
                         defaultValue={pageIndex + 1}
                         onChange={e => {
                             const page = e.target.value ? Number(e.target.value) - 1 : 0
-                            const answer_number = String(e.target.value)
-                            if (visibleColumns[answer_number].id === answer_number)
-                                gotoPage(page)
+                            gotoPage(page);
                         }}
                         style={{width: '100px'}}
                     />
@@ -187,6 +185,7 @@ class App extends Component {
         rows: [],
         columns: [],
         data: [],
+        answerStatus: "Not Set"
     }
 
     componentDidMount() {
@@ -195,7 +194,8 @@ class App extends Component {
         const q2_url_local = "http://localhost:3000/data/cleaned_questions_set_1.tsv"
         const question_set_urls = [q1_url, q2_url_local]
         const headerNames = ["0", "1", "2", "3", "4", "5", "6", "1b", "2b", "Explanation", "Link", "Contributor", "Verifier", "Verified"]
-        this.setState({ columns: [
+        this.setState({
+            columns: [
 
                 {
 
@@ -228,30 +228,31 @@ class App extends Component {
             rows: []
         })
 
-
         readRemoteFile(question_set_urls[1], {
             complete: (results) => {
                 console.log('Results:', results);
                 this.setState({
                     // update state
                     rows: results.data,
-                    data: results
+                    data: results,
+                    answerStatus: "Unknown",
                 });
             },
         })
     }
 
+    handleAnswer = e => {
+        if (e)
+            this.setState({answer: e.target.value});
+    };
 
     render() {
 
-
         return (
-
             <Styles>
                 <Table columns={
                     this.state.columns
                 }
-
                        data=
                            {
                                this.state.rows
