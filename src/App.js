@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {Component} from 'react'
 import styled from 'styled-components'
 import {readRemoteFile} from "react-papaparse";
 import {useColumnOrder, usePagination, useTable} from 'react-table'
@@ -62,20 +62,20 @@ function Table({columns, data}) {
         setPageSize,
         setColumnOrder,
         visibleColumns,
-        state: {pageIndex, pageSize},
+        state: {pageIndex, pageSize, answerStatus},
     } = useTable(
         {
             columns,
             data,
-            initialState: {pageIndex: 2},
+            initialState: {pageIndex: 2, pageSize: 1, answerStatus: "None"}
         },
         useColumnOrder,
         usePagination
     )
 
-  const randomizeColumns = () => {
-    setColumnOrder(shuffle(visibleColumns.map(d => d.id)))
-  }
+    const randomizeColumns = () => {
+        setColumnOrder(shuffle(visibleColumns.map(d => d.id)))
+    }
     // Render the UI for your table
     return (
         <>
@@ -88,13 +88,14 @@ function Table({columns, data}) {
                   pageCount,
                   canNextPage,
                   canPreviousPage,
+                  answerStatus,
               },
               null,
               2
           )}
         </code>
       </pre>
-                  <button onClick={() => randomizeColumns({})}>Randomize Columns</button>
+            <button onClick={() => randomizeColumns({})}>Randomize Columns</button>
 
             <table {...getTableProps()}>
                 <thead>
@@ -153,7 +154,8 @@ function Table({columns, data}) {
                         defaultValue={pageIndex + 1}
                         onChange={e => {
                             const page = e.target.value ? Number(e.target.value) - 1 : 0
-                            if (visibleColumns[e.target.value].id ===1)
+                            const answer_number = String(e.target.value)
+                            if (visibleColumns[answer_number].id === answer_number)
                                 gotoPage(page)
                         }}
                         style={{width: '100px'}}
@@ -172,66 +174,92 @@ function Table({columns, data}) {
                     ))}
                 </select>
             </div>
+            <div className="alert" hidden={true}>
+                <strong>Danger!</strong> Indicates a dangerous or potentially negative action.
+            </div>
         </>
     )
 }
 
-function App() {
-    const q1_url = "https://raw.githubusercontent.com/pokadmin/kq_app/main/src/data/cleaned_questions_set_1.tsv"
-    const q2_url_local = "http://localhost:3000/data/cleaned_questions_set_1.tsv"
-    const question_set_urls = [q1_url, q2_url_local]
-    const headerNames = ["0", "1", "2", "3", "4", "5", "6", "1b", "2b", "Explanation", "Link", "Contributor", "Verifier", "Verified"]
-    const columns = React.useMemo(
-        () => [
+class App extends Component {
+    state = {
+        // initial state
+        rows: [],
+        columns: [],
+        data: [],
+    }
 
-            {
+    componentDidMount() {
 
-                Header: 'Question/Answers',
-                columns: [
-                    {
-                        accessor: headerNames[0],
-                    },
-                    {
-                        accessor: headerNames[1],
-                    },
-                    {
-                        accessor: headerNames[2],
-                    },
-                    {
-                        accessor: headerNames[3],
-                    },
-                    {
-                        accessor: headerNames[4],
-                    },
-                    {
-                        accessor: headerNames[5],
-                    },
-                    {
-                        accessor: headerNames[6],
-                    },
-                ],
-            },
-        ],
-        []
-    )
-    const [rows, setRows] = React.useState([]);
-    React.useEffect(() => {
+        const q1_url = "https://raw.githubusercontent.com/pokadmin/kq_app/main/src/data/cleaned_questions_set_1.tsv"
+        const q2_url_local = "http://localhost:3000/data/cleaned_questions_set_1.tsv"
+        const question_set_urls = [q1_url, q2_url_local]
+        const headerNames = ["0", "1", "2", "3", "4", "5", "6", "1b", "2b", "Explanation", "Link", "Contributor", "Verifier", "Verified"]
+        this.setState({ columns: [
+
+                {
+
+                    Header: 'Question/Answers',
+                    columns: [
+                        {
+                            accessor: headerNames[0],
+                        },
+                        {
+                            accessor: headerNames[1],
+                        },
+                        {
+                            accessor: headerNames[2],
+                        },
+                        {
+                            accessor: headerNames[3],
+                        },
+                        {
+                            accessor: headerNames[4],
+                        },
+                        {
+                            accessor: headerNames[5],
+                        },
+                        {
+                            accessor: headerNames[6],
+                        },
+                    ],
+                },
+            ],
+            rows: []
+        })
+
+
         readRemoteFile(question_set_urls[1], {
             complete: (results) => {
                 console.log('Results:', results);
-                setRows(results.data);
+                this.setState({
+                    // update state
+                    rows: results.data,
+                    data: results
+                });
             },
         })
-    }, []);
-    console.log(rows);
+    }
 
 
-    return (
+    render() {
 
-        <Styles>
-            <Table columns= {columns} data={rows}/>
-        </Styles>
-    )
+
+        return (
+
+            <Styles>
+                <Table columns={
+                    this.state.columns
+                }
+
+                       data=
+                           {
+                               this.state.rows
+                           }
+                />
+            </Styles>
+        )
+    }
 }
 
 export default App
