@@ -274,7 +274,7 @@ class App extends Component {
             rows: []
         })
 
-        readRemoteFile(question_set_urls[1], {
+        readRemoteFile(question_set_urls[0], {
             complete: (results) => {
                 console.log('Results:', results);
                 this.setState({
