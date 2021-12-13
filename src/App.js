@@ -83,7 +83,7 @@ function Table({
         {
             columns,
             data,
-            initialState: {pageIndex: 2, pageSize: 1, answerStatus: "None"}
+            initialState: {pageIndex: 2, pageSize: 1, answerStatus: "No questions attempted yet."}
         },
         useColumnOrder,
         usePagination
@@ -100,11 +100,15 @@ function Table({
         setColumnOrder(random_order)
     }
 
-    function my_nextPage() {
+    function randomizeNextPage() {
         randomizeColumns();
         return nextPage();
     }
 
+    function gotoPageRandomized(page) {
+        randomizeColumns();
+        gotoPage(page)
+    }
     // Render the UI for your table
     return (
         <>
@@ -173,7 +177,7 @@ function Table({
                     {'<'}
                 </button>
                 {' '}
-                <button onClick={() => my_nextPage()} disabled={!canNextPage}>
+                <button onClick={() => randomizeNextPage()} disabled={!canNextPage}>
                     {'>'}
                 </button>
                 {' '}
@@ -194,7 +198,7 @@ function Table({
                         defaultValue={pageIndex + 1}
                         onChange={e => {
                             const page = e.target.value ? Number(e.target.value) - 1 : 0
-                            gotoPage(page);
+                            gotoPageRandomized(page);
                         }}
                         style={{width: '100px'}}
                     />
@@ -229,7 +233,8 @@ class App extends Component {
         data: [],
         potentialAnswers: [],
         correctIndex: -1,
-        correctAnswer: "correctAnswer initial state",
+        guess_count: 0,
+        correct_count: 0,
         answerStatus: "answerStatus initial state"
 
     }
@@ -310,7 +315,8 @@ class App extends Component {
                        getHeaderProps={column => ({
 
                            onClick: () => {
-                               alert(("1" === String(column.id)) ? String(column.id) + " is Correct!" : String(column.id) + " is WRONG!")
+
+                               this.my_anwser_handler(column)
                            },
                            style:
                                {
@@ -318,9 +324,7 @@ class App extends Component {
                                }
 
                        })}
-                       getColumnProps={column => ({
-                           onClick: () => alert('Column!'),
-                       })}
+
                        getRowProps={row => ({
                            style: {
                                background: row.index % 2 === 0 ? 'rgba(0,0,0,.1)' : 'white',
@@ -333,9 +337,24 @@ class App extends Component {
                            },
                        })}
                 />
-
+                <div>
+                    <h1>  {this.state.answerStatus}.</h1>
+                </div>
             </Styles>
         )
+    }
+
+    my_anwser_handler(column) {
+        let isCorrect = ("1" === String(column.id))
+        let guess_count_ = this.state.guess_count + 1
+        let correct_count_ = this.state.correct_count
+        if (isCorrect) {
+            correct_count_= correct_count_+1
+        }
+        let percent = (correct_count_ / guess_count_) * 100
+        let answerStatus_ =  "You have "+correct_count_+" correct answers and have guessed "+guess_count_+" times. You are "+percent+ "%  enlightened by our calculation"
+        this.setState({guess_count: guess_count_, answerStatus:answerStatus_,correct_count: correct_count_})
+        return alert(isCorrect ? String(column.id) + " is Correct!" +answerStatus_ : String(column.id) + " is WRONG!"+answerStatus_);
     }
 }
 
