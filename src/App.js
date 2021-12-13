@@ -5,6 +5,11 @@ import {useColumnOrder, usePagination, useTable} from 'react-table'
 
 const Styles = styled.div`
   padding: 1rem;
+  
+  .user {
+    background-color: blue;
+    color: white;
+  }
   table {
     border-spacing: 0;
     border: 1px solid black;
@@ -41,54 +46,79 @@ function shuffle(arr) {
     return shuffled
 }
 
-function Table({columns, data}) {
-        // Use the state and functions returned from useTable to build your UI
-        const {
-            getTableProps,
-            getTableBodyProps,
-            headerGroups,
-            prepareRow,
-            page, // Instead of using 'rows', we'll use page,
-            // which has only the rows for the active page
+// Create a default prop getter
+const defaultPropGetter = () => ({})
 
-            // The rest of these things are super handy, too ;)
-            canPreviousPage,
-            canNextPage,
-            pageOptions,
-            pageCount,
-            gotoPage,
-            nextPage,
-            previousPage,
-            setPageSize,
-            setColumnOrder,
-            visibleColumns,
-            state: {pageIndex, pageSize, answerStatus},
-        } = useTable(
-            {
-                columns,
-                data,
-                initialState: {pageIndex: 2, pageSize: 1, answerStatus: "None"}
-            },
-            useColumnOrder,
-            usePagination
-        )
+function Table({
+                   columns,
+                   data,
+                   getHeaderProps = defaultPropGetter,
+                   getColumnProps = defaultPropGetter,
+                   getRowProps = defaultPropGetter,
+                   getCellProps = defaultPropGetter
 
+               }) {
+    // Use the state and functions returned from useTable to build your UI
+    const {
+        getTableProps,
+        getTableBodyProps,
+        headerGroups,
+        prepareRow,
+        page, // Instead of using 'rows', we'll use page,
+        // which has only the rows for the active page
+
+        // The rest of these things are super handy, too ;)
+        canPreviousPage,
+        canNextPage,
+        pageOptions,
+        pageCount,
+        gotoPage,
+        nextPage,
+        previousPage,
+        setPageSize,
+        setColumnOrder,
+        visibleColumns,
+        state: {pageIndex, pageSize, answerStatus},
+    } = useTable(
+        {
+            columns,
+            data,
+            initialState: {pageIndex: 2, pageSize: 1, answerStatus: "None"}
+        },
+        useColumnOrder,
+        usePagination
+    )
+    // eslint-disable-next-line no-unused-vars
     const randomizeColumns = () => {
-        setColumnOrder(shuffle(visibleColumns.map(d => d.id)))
+        let question_item = visibleColumns[0]
+        let random_order = shuffle(visibleColumns.map(d => d.id))
+        // We shuffled all items, good cause we want random order. But we want the question first. Swapp
+        let question_item_random_index = random_order.indexOf(question_item.id)
+        let non_question_item_at_0 = random_order[0]
+        random_order[0] = "0"
+        random_order[question_item_random_index] = non_question_item_at_0
+        setColumnOrder(random_order)
     }
+
+    function my_nextPage() {
+        randomizeColumns();
+        return nextPage();
+    }
+
     // Render the UI for your table
     return (
         <>
       <pre>
+
         <code>
+
           {JSON.stringify(
               {
                   pageIndex,
-                  pageSize,
                   pageCount,
-                  canNextPage,
-                  canPreviousPage,
-                  answerStatus,
+              //   canNextPage,
+              //   canPreviousPage,
+              //   answerStatus,
               },
               null,
               2
@@ -102,7 +132,17 @@ function Table({columns, data}) {
                 {headerGroups.map(headerGroup => (
                     <tr {...headerGroup.getHeaderGroupProps()}>
                         {headerGroup.headers.map(column => (
-                            <th {...column.getHeaderProps()}>{column.render('Header')}</th>
+                            <th
+                                {...column.getHeaderProps([
+                                    {
+                                        className: column.className,
+                                        style: column.style,
+                                    },
+                                    getColumnProps(column),
+                                    getHeaderProps(column),
+                                ])}
+                            >
+                                {column.render('Header')}</th>
                         ))}
                     </tr>
                 ))}
@@ -133,7 +173,7 @@ function Table({columns, data}) {
                     {'<'}
                 </button>
                 {' '}
-                <button onClick={() => nextPage()} disabled={!canNextPage}>
+                <button onClick={() => my_nextPage()} disabled={!canNextPage}>
                     {'>'}
                 </button>
                 {' '}
@@ -179,13 +219,19 @@ function Table({columns, data}) {
     )
 }
 
+// Components / Classes are better...
+// How to convert : https://www.digitalocean.com/community/tutorials/five-ways-to-convert-react-class-components-to-functional-components-with-react-hooks
 class App extends Component {
     state = {
         // initial state
         rows: [],
         columns: [],
         data: [],
-        answerStatus: "Not Set"
+        potentialAnswers: [],
+        correctIndex: -1,
+        correctAnswer: "correctAnswer initial state",
+        answerStatus: "answerStatus initial state"
+
     }
 
     componentDidMount() {
@@ -199,7 +245,7 @@ class App extends Component {
 
                 {
 
-                    Header: 'Question/Answers',
+                    Header: 'Click in the row below in the Header for the correct answer!',
                     columns: [
                         {
                             accessor: headerNames[0],
@@ -228,7 +274,7 @@ class App extends Component {
             rows: []
         })
 
-        readRemoteFile(question_set_urls[1], {
+        readRemoteFile(question_set_urls[0], {
             complete: (results) => {
                 console.log('Results:', results);
                 this.setState({
@@ -239,15 +285,19 @@ class App extends Component {
                 });
             },
         })
+
+
     }
 
-    handleAnswer = e => {
-        if (e)
-            this.setState({answer: e.target.value});
+    onAnswerSelected = e => {
+        if (e.target.value) {
+            const answerStatus_local = String(e.target.value)
+            this.setState({answerStatus: answerStatus_local});
+        }
+
     };
 
     render() {
-
         return (
             <Styles>
                 <Table columns={
@@ -257,7 +307,33 @@ class App extends Component {
                            {
                                this.state.rows
                            }
+                       getHeaderProps={column => ({
+
+                           onClick: () => {
+                               alert(("1" === String(column.id)) ? String(column.id) + " is Correct!" : String(column.id) + " is WRONG!")
+                           },
+                           style:
+                               {
+                                   background: (("0" === String(column.id)) ? 'rgba(0,0,0,.4)' : 'rgba(0,0,0,.1)'),
+                               }
+
+                       })}
+                       getColumnProps={column => ({
+                           onClick: () => alert('Column!'),
+                       })}
+                       getRowProps={row => ({
+                           style: {
+                               background: row.index % 2 === 0 ? 'rgba(0,0,0,.1)' : 'white',
+                           },
+                       })}
+                       getCellProps={cellInfo => ({
+                           style: {
+                               backgroundColor: `hsl(${120 * ((120 - cellInfo.value) / 120) * -1 +
+                               120}, 100%, 67%)`,
+                           },
+                       })}
                 />
+
             </Styles>
         )
     }
