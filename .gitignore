@@ -24,3 +24,4 @@ yarn-error.log*
 /yarn.lock
 /.run/debugapp.run.xml
 /.run/run start.run.xml
+/package-lock.json
