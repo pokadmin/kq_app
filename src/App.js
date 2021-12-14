@@ -116,60 +116,7 @@ function Table({
     // Render the UI for your table
     return (
         <>
-      <pre>
-
-        <code>
-
-          {JSON.stringify(
-              {
-                  pageIndex,
-                  pageCount,
-                  //   canNextPage,
-                  //   canPreviousPage,
-                  //   answerStatus,
-              },
-              null,
-              2
-          )}
-        </code>
-      </pre>
-            <button onClick={() => randomizeColumns({})}>Randomize Columns</button>
-
-            <table {...getTableProps()}>
-                <thead>
-                {headerGroups.map(headerGroup => (
-                    <tr {...headerGroup.getHeaderGroupProps()}>
-                        {headerGroup.headers.map(column => (
-                            <th
-                                {...column.getHeaderProps([
-                                    {
-                                        className: column.className,
-                                        style: column.style,
-                                    },
-                                    getColumnProps(column),
-                                    getHeaderProps(column),
-                                ])}
-                            >
-                                {column.render('Header')}</th>
-                        ))}
-                    </tr>
-                ))}
-                </thead>
-                <tbody {...getTableBodyProps()}>
-                {page.map((row, i) => {
-                    prepareRow(row)
-                    return (
-                        <tr {...row.getRowProps(getRowProps(row))}>
-                            {row.cells.map(cell => {
-
-                                return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
-                            })}
-                        </tr>
-                    )
-                })}
-                </tbody>
-            </table>
-            {/*
+    {/*
         Pagination can be built however you'd like.
         This is just a very basic UI implementation:
       */}
@@ -221,9 +168,59 @@ function Table({
                     ))}
                 </select>
             </div>
-            <div className="alert" hidden={true}>
-                <strong>Danger!</strong> Indicates a dangerous or potentially negative action.
-            </div>
+
+            <table {...getTableProps()}>
+                <thead>
+                {headerGroups.map(headerGroup => (
+                    <tr {...headerGroup.getHeaderGroupProps()}>
+                        {headerGroup.headers.map(column => (
+                            <th
+                                {...column.getHeaderProps([
+                                    {
+                                        className: column.className,
+                                        style: column.style,
+                                    },
+                                    getColumnProps(column),
+                                    getHeaderProps(column),
+                                ])}
+                            >
+                                {column.render('Header')}</th>
+                        ))}
+                    </tr>
+                ))}
+                </thead>
+                <tbody {...getTableBodyProps()}>
+                {page.map((row, i) => {
+                    prepareRow(row)
+                    return (
+                        <tr {...row.getRowProps(getRowProps(row))}>
+                            {row.cells.map(cell => {
+
+                                return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
+                            })}
+                        </tr>
+                    )
+                })}
+                </tbody>
+            </table>
+
+           <pre>
+
+        <code>
+
+          {JSON.stringify(
+              {
+                  pageIndex,
+                  pageCount,
+                  //   canNextPage,
+                  //   canPreviousPage,
+                  //   answerStatus,
+              },
+              null,
+              2
+          )}
+        </code>
+      </pre>
         </>
     )
 }
@@ -256,7 +253,7 @@ class App extends Component {
 
                 {
 
-                    Header: 'Click in the row below in the Header for the correct answer!',
+                    Header: 'Choose and Answer: Click on the header above the column with your Answer!',
 
                     columns: [
                         {
@@ -264,21 +261,27 @@ class App extends Component {
                             accessor: headerNames[0],
                         },
                         {
+                            Header: 'Click to select',
                             accessor: headerNames[1],
                         },
                         {
+                            Header: 'Click to select',
                             accessor: headerNames[2],
                         },
                         {
+                            Header: 'Click to select',
                             accessor: headerNames[3],
                         },
                         {
+                            Header: 'Click to select',
                             accessor: headerNames[4],
                         },
                         {
+                            Header: 'Click to select',
                             accessor: headerNames[5],
                         },
                         {
+                            Header: 'Click to select',
                             accessor: headerNames[6],
                         },
 
@@ -309,6 +312,7 @@ class App extends Component {
     render() {
         return (
             <Styles>
+               <h1>  {"To see the explanation click in the row with the answers."}</h1>
                 <Table columns={
                     this.state.columns
                 }
@@ -322,7 +326,7 @@ class App extends Component {
                            },
                            style:
                                {
-                                   background: (("0" === String(column.id)) ? 'rgba(222,200,0,.4)' : 'rgba(0,0,0,.1)'),
+                                   background: (("0" === String(column.id)) ? 'rgba(222,200,0,.4)' : 'rgba(0,0,230,.1)'),
                                }
 
                        })}
@@ -339,12 +343,12 @@ class App extends Component {
                                background: row.index % 2 === 0 ? 'rgba(0,0,0,.1)' : 'white',
                            },
                        })}
-                       getCellProps={cellInfo => ({
-                           style: {
-                               backgroundColor: `hsl(${120 * ((120 - cellInfo.value) / 120) * -1 +
-                               120}, 100%, 67%)`,
-                           },
-                       })}
+                       // getCellProps={cellInfo => ({
+                       //     style: {
+                       //         backgroundColor: `hsl(${120 * ((120 - cellInfo.value) / 120) * -1 +
+                       //         120}, 100%, 67%)`,
+                       //     },
+                       // })}
                 />
                 <div>
                     <h1>  {this.state.answerStatus }.</h1>
@@ -377,6 +381,7 @@ class App extends Component {
         let percent = (correct_count_ / guess_count_) * 100
         let answerStatus_ = "You have " + correct_count_ + " correct answers and have guessed " + guess_count_ + " times. You are " + percent + "%  enlightened by our calculation"
         this.setState({guess_count: guess_count_, answerStatus: answerStatus_, correct_count: correct_count_})
+
         return alert(isCorrect ? String(column.id) + " is Correct!" + answerStatus_ : String(column.id) + " is WRONG!" + answerStatus_+"\n  click on the row for an explanation.");
     }
 }
