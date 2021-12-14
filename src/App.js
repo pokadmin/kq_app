@@ -3,6 +3,8 @@ import styled from 'styled-components'
 import {readRemoteFile} from "react-papaparse";
 import {useColumnOrder, usePagination, useTable} from 'react-table'
 
+const headerNames = ["0", "1", "2", "3", "4", "5", "6", "Explanation", "PoK Program Link", "PoK Podcast Link", "Contributor", "Verifier", "Verified"]
+
 const Styles = styled.div`
   padding: 1rem;
   
@@ -90,6 +92,7 @@ function Table({
     )
     // eslint-disable-next-line no-unused-vars
     const randomizeColumns = () => {
+
         let question_item = visibleColumns[0]
         let random_order = shuffle(visibleColumns.map(d => d.id))
         // We shuffled all items, good cause we want random order. But we want the question first. Swapp
@@ -109,6 +112,7 @@ function Table({
         randomizeColumns();
         gotoPage(page)
     }
+
     // Render the UI for your table
     return (
         <>
@@ -120,9 +124,9 @@ function Table({
               {
                   pageIndex,
                   pageCount,
-              //   canNextPage,
-              //   canPreviousPage,
-              //   answerStatus,
+                  //   canNextPage,
+                  //   canPreviousPage,
+                  //   answerStatus,
               },
               null,
               2
@@ -155,8 +159,9 @@ function Table({
                 {page.map((row, i) => {
                     prepareRow(row)
                     return (
-                        <tr {...row.getRowProps()}>
+                        <tr {...row.getRowProps(getRowProps(row))}>
                             {row.cells.map(cell => {
+
                                 return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
                             })}
                         </tr>
@@ -235,24 +240,27 @@ class App extends Component {
         correctIndex: -1,
         guess_count: 0,
         correct_count: 0,
-        answerStatus: "answerStatus initial state"
+        explanation: "No explanation",
+        links: "no links",
+        answerStatus: "You have not yet answered any questions. Click on the header to select an answer",
 
     }
 
     componentDidMount() {
 
-        const q1_url = "https://raw.githubusercontent.com/pokadmin/kq_app/main/src/data/cleaned_questions_set_1.tsv"
+        const q1_url = "https://raw.githubusercontent.com/pokadmin/kq_app/main/public/data/cleaned_questions_set_1.tsv"
         const q2_url_local = "http://localhost:3000/data/cleaned_questions_set_1.tsv"
         const question_set_urls = [q1_url, q2_url_local]
-        const headerNames = ["0", "1", "2", "3", "4", "5", "6", "1b", "2b", "Explanation", "Link", "Contributor", "Verifier", "Verified"]
         this.setState({
             columns: [
 
                 {
 
                     Header: 'Click in the row below in the Header for the correct answer!',
+
                     columns: [
                         {
+                            Header: 'Question',
                             accessor: headerNames[0],
                         },
                         {
@@ -273,20 +281,23 @@ class App extends Component {
                         {
                             accessor: headerNames[6],
                         },
+
                     ],
                 },
             ],
             rows: []
         })
 
-        readRemoteFile(question_set_urls[0], {
+        readRemoteFile(question_set_urls[1], {
             complete: (results) => {
                 console.log('Results:', results);
                 this.setState({
                     // update state
                     rows: results.data,
                     data: results,
-                    answerStatus: "Unknown",
+                    explanation: "No explanation",
+                    links: "no links",
+                    answerStatus: "You have not yet answered any questions. Click on the header to select an answer",
                 });
             },
         })
@@ -294,13 +305,6 @@ class App extends Component {
 
     }
 
-    onAnswerSelected = e => {
-        if (e.target.value) {
-            const answerStatus_local = String(e.target.value)
-            this.setState({answerStatus: answerStatus_local});
-        }
-
-    };
 
     render() {
         return (
@@ -313,19 +317,24 @@ class App extends Component {
                                this.state.rows
                            }
                        getHeaderProps={column => ({
-
                            onClick: () => {
-
                                this.my_anwser_handler(column)
                            },
                            style:
                                {
-                                   background: (("0" === String(column.id)) ? 'rgba(0,0,0,.4)' : 'rgba(0,0,0,.1)'),
+                                   background: (("0" === String(column.id)) ? 'rgba(222,200,0,.4)' : 'rgba(0,0,0,.1)'),
                                }
 
                        })}
 
                        getRowProps={row => ({
+                            onClick: () => {
+                               this.currentRow(row)
+                           },
+                           once:()=>{
+                               this.currentRow(row)
+                           },
+                           row: ()=>{ this.currentRow(row)},
                            style: {
                                background: row.index % 2 === 0 ? 'rgba(0,0,0,.1)' : 'white',
                            },
@@ -338,10 +347,24 @@ class App extends Component {
                        })}
                 />
                 <div>
-                    <h1>  {this.state.answerStatus}.</h1>
+                    <h1>  {this.state.answerStatus }.</h1>
                 </div>
             </Styles>
         )
+    }
+
+    currentRow(row) {
+        let original_ = row
+        if (original_) {
+            let explanation_ = row.original[7]
+            let videos = row.original[8]
+            let pods = row.original[9]
+            let review = row.original[10]
+
+            this.setState({explanation: explanation_})
+            return alert("Here is the explanation: \n"+explanation_+"\nVideos: "+videos+"\nPodcasts"+pods);
+
+        }
     }
 
     my_anwser_handler(column) {
@@ -349,12 +372,12 @@ class App extends Component {
         let guess_count_ = this.state.guess_count + 1
         let correct_count_ = this.state.correct_count
         if (isCorrect) {
-            correct_count_= correct_count_+1
+            correct_count_ = correct_count_ + 1
         }
         let percent = (correct_count_ / guess_count_) * 100
-        let answerStatus_ =  "You have "+correct_count_+" correct answers and have guessed "+guess_count_+" times. You are "+percent+ "%  enlightened by our calculation"
-        this.setState({guess_count: guess_count_, answerStatus:answerStatus_,correct_count: correct_count_})
-        return alert(isCorrect ? String(column.id) + " is Correct!" +answerStatus_ : String(column.id) + " is WRONG!"+answerStatus_);
+        let answerStatus_ = "You have " + correct_count_ + " correct answers and have guessed " + guess_count_ + " times. You are " + percent + "%  enlightened by our calculation"
+        this.setState({guess_count: guess_count_, answerStatus: answerStatus_, correct_count: correct_count_})
+        return alert(isCorrect ? String(column.id) + " is Correct!" + answerStatus_ : String(column.id) + " is WRONG!" + answerStatus_+"\n  click on the row for an explanation.");
     }
 }
 
