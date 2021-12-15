@@ -1,20 +1,22 @@
-import React, {Component} from 'react'
+import React from 'react'
 import styled from 'styled-components'
 import {readRemoteFile} from "react-papaparse";
 import {useColumnOrder, usePagination, useTable} from 'react-table'
 
-const headerNames = ["0", "1", "2", "3", "4", "5", "6", "Explanation", "PoK Program Link", "PoK Podcast Link", "Contributor", "Verifier", "Verified"]
+import makeData from './makeData'
+
+const headerNamesKQ = ["0", "1", "2", "3", "4", "5", "6", "Explanation", "Link", "Contributor", "Verifier", "Verified"]
+const q1_url = "https://raw.githubusercontent.com/pokadmin/kq_app/main/public/data/cleaned_questions_set_1.tsv"
+const q2_url_local = "http://localhost:3000/data/cleaned_questions_set_1.tsv"
+const question_set_urls = [q1_url, q2_url_local]
 
 const Styles = styled.div`
   padding: 1rem;
-  
-  .user {
-    background-color: blue;
-    color: white;
-  }
+
   table {
     border-spacing: 0;
     border: 1px solid black;
+
     tr {
       :last-child {
         td {
@@ -22,17 +24,20 @@ const Styles = styled.div`
         }
       }
     }
+
     th,
     td {
       margin: 0;
       padding: 0.5rem;
       border-bottom: 1px solid black;
       border-right: 1px solid black;
+
       :last-child {
         border-right: 0;
       }
     }
   }
+
   .pagination {
     padding: 0.5rem;
   }
@@ -51,25 +56,27 @@ function shuffle(arr) {
 // Create a default prop getter
 const defaultPropGetter = () => ({})
 
+// Let's add a fetchData method to our Table component that will be used to fetch
+// new data when pagination state changes
+// We can also add a loading state to let our table know it's loading new data
 function Table({
                    columns,
                    data,
                    getHeaderProps = defaultPropGetter,
                    getColumnProps = defaultPropGetter,
                    getRowProps = defaultPropGetter,
-                   getCellProps = defaultPropGetter
+                   getCellProps = defaultPropGetter,
 
+                   fetchData,
+                   loading,
+                   pageCount: controlledPageCount,
                }) {
-    // Use the state and functions returned from useTable to build your UI
     const {
         getTableProps,
         getTableBodyProps,
         headerGroups,
         prepareRow,
-        page, // Instead of using 'rows', we'll use page,
-        // which has only the rows for the active page
-
-        // The rest of these things are super handy, too ;)
+        page,
         canPreviousPage,
         canNextPage,
         pageOptions,
@@ -77,15 +84,15 @@ function Table({
         gotoPage,
         nextPage,
         previousPage,
-        setPageSize,
+
         setColumnOrder,
         visibleColumns,
-        state: {pageIndex, pageSize, answerStatus},
+        state: {pageIndex, kQColumnOrder},
     } = useTable(
         {
             columns,
             data,
-            initialState: {pageIndex: 2, pageSize: 1, answerStatus: "No questions attempted yet."}
+            initialState: {pageIndex: 1, pageSize: 1, kQColumnOrder: []}
         },
         useColumnOrder,
         usePagination
@@ -101,22 +108,30 @@ function Table({
         random_order[0] = "0"
         random_order[question_item_random_index] = non_question_item_at_0
         setColumnOrder(random_order)
+        return random_order
     }
 
+
+    function gotoPageRandomized(page) {
+        const co = randomizeColumns();
+
+        gotoPage(page)
+    }
     function randomizeNextPage() {
-        randomizeColumns();
+        const co = randomizeColumns();
+
         return nextPage();
     }
 
-    function gotoPageRandomized(page) {
-        randomizeColumns();
-        gotoPage(page)
-    }
+    // Listen for changes in pagination and use the state to fetch our new data
+    React.useEffect(() => {
+        fetchData({pageIndex, kQColumnOrder})
+    }, [fetchData, pageIndex, kQColumnOrder])
 
     // Render the UI for your table
     return (
         <>
-    {/*
+            {/*
         Pagination can be built however you'd like.
         This is just a very basic UI implementation:
       */}
@@ -155,18 +170,7 @@ function Table({
                         style={{width: '100px'}}
                     />
         </span>{' '}
-                <select
-                    value={pageSize}
-                    onChange={e => {
-                        setPageSize(Number(e.target.value))
-                    }}
-                >
-                    {[1, 2, 3, 4, 5, 50].map(pageSize => (
-                        <option key={pageSize} value={pageSize}>
-                            Show {pageSize}
-                        </option>
-                    ))}
-                </select>
+
             </div>
 
             <table {...getTableProps()}>
@@ -175,11 +179,21 @@ function Table({
                     <tr {...headerGroup.getHeaderGroupProps()}>
                         {headerGroup.headers.map(column => (
                             <th
+
                                 {...column.getHeaderProps([
                                     {
+                                        Header: "sdaf",
                                         className: column.className,
                                         style: column.style,
                                     },
+                                    {
+                                        ...column.Header =
+                                            <div
+                                                style={{textAlign: 'right', fontVariantNumeric: 'tabular-nums'}}
+                                            > {column.id} </div>
+
+                                    },
+
                                     getColumnProps(column),
                                     getHeaderProps(column),
                                 ])}
@@ -196,7 +210,7 @@ function Table({
                         <tr {...row.getRowProps(getRowProps(row))}>
                             {row.cells.map(cell => {
 
-                                return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
+                                return <td {...cell.getCellProps(getCellProps(cell))}>{cell.render('Cell')}</td>
                             })}
                         </tr>
                     )
@@ -204,7 +218,7 @@ function Table({
                 </tbody>
             </table>
 
-           <pre>
+            <pre>
 
         <code>
 
@@ -225,153 +239,22 @@ function Table({
     )
 }
 
-// Components / Classes are better...
-// How to convert : https://www.digitalocean.com/community/tutorials/five-ways-to-convert-react-class-components-to-functional-components-with-react-hooks
-class App extends Component {
-    state = {
-        // initial state
-        rows: [],
-        columns: [],
-        data: [],
-        potentialAnswers: [],
-        correctIndex: -1,
-        guess_count: 0,
-        correct_count: 0,
-        explanation: "No explanation",
-        links: "no links",
-        answerStatus: "You have not yet answered any questions. Click on the header to select an answer",
-
-    }
-
-    componentDidMount() {
-
-        const q1_url = "https://raw.githubusercontent.com/pokadmin/kq_app/main/public/data/cleaned_questions_set_1.tsv"
-        const q2_url_local = "http://localhost:3000/data/cleaned_questions_set_1.tsv"
-        const question_set_urls = [q1_url, q2_url_local]
-        this.setState({
-            columns: [
-
-                {
-
-                    Header: 'Choose and Answer: Click on the header above the column with your Answer!',
-
-                    columns: [
-                        {
-                            Header: 'Question',
-                            accessor: headerNames[0],
-                        },
-                        {
-                            Header: 'Click to select',
-                            accessor: headerNames[1],
-                        },
-                        {
-                            Header: 'Click to select',
-                            accessor: headerNames[2],
-                        },
-                        {
-                            Header: 'Click to select',
-                            accessor: headerNames[3],
-                        },
-                        {
-                            Header: 'Click to select',
-                            accessor: headerNames[4],
-                        },
-                        {
-                            Header: 'Click to select',
-                            accessor: headerNames[5],
-                        },
-                        {
-                            Header: 'Click to select',
-                            accessor: headerNames[6],
-                        },
-
-                    ],
-                },
-            ],
-            rows: []
-        })
-
-        readRemoteFile(question_set_urls[1], {
-            complete: (results) => {
-                console.log('Results:', results);
-                this.setState({
-                    // update state
-                    rows: results.data,
-                    data: results,
-                    explanation: "No explanation",
-                    links: "no links",
-                    answerStatus: "You have not yet answered any questions. Click on the header to select an answer",
-                });
-            },
-        })
-
-
-    }
-
-
-    render() {
-        return (
-            <Styles>
-               <h1>  {"To see the explanation click in the row with the answers."}</h1>
-                <Table columns={
-                    this.state.columns
-                }
-                       data=
-                           {
-                               this.state.rows
-                           }
-                       getHeaderProps={column => ({
-                           onClick: () => {
-                               this.my_anwser_handler(column)
-                           },
-                           style:
-                               {
-                                   background: (("0" === String(column.id)) ? 'rgba(222,200,0,.4)' : 'rgba(0,0,230,.1)'),
-                               }
-
-                       })}
-
-                       getRowProps={row => ({
-                            onClick: () => {
-                               this.currentRow(row)
-                           },
-                           once:()=>{
-                               this.currentRow(row)
-                           },
-                           row: ()=>{ this.currentRow(row)},
-                           style: {
-                               background: row.index % 2 === 0 ? 'rgba(0,0,0,.1)' : 'white',
-                           },
-                       })}
-                       // getCellProps={cellInfo => ({
-                       //     style: {
-                       //         backgroundColor: `hsl(${120 * ((120 - cellInfo.value) / 120) * -1 +
-                       //         120}, 100%, 67%)`,
-                       //     },
-                       // })}
-                />
-                <div>
-                    <h1>  {this.state.answerStatus }.</h1>
-                </div>
-            </Styles>
-        )
-    }
-
-    currentRow(row) {
+// Let's simulate a large dataset on the server (outside of our component)
+const serverData = makeData(10000)
+ const currentRow = (row) => {
         let original_ = row
         if (original_) {
             let explanation_ = row.original[7]
-            let videos = row.original[8]
-            let pods = row.original[9]
-            let review = row.original[10]
+            let links = row.original[8]
+            let contributor = row.original[9]
 
             this.setState({explanation: explanation_})
-            return alert("Here is the explanation: \n"+explanation_+"\nVideos: "+videos+"\nPodcasts"+pods);
+            return alert("Here is the explanation: \n" + explanation_ + "\nlinks: " + links + "\ncontributor" + contributor);
 
         }
     }
 
-    my_anwser_handler(column) {
+   const my_anwser_handler=(column)=> {
         let isCorrect = ("1" === String(column.id))
         let guess_count_ = this.state.guess_count + 1
         let correct_count_ = this.state.correct_count
@@ -382,8 +265,119 @@ class App extends Component {
         let answerStatus_ = "You have " + correct_count_ + " correct answers and have guessed " + guess_count_ + " times. You are " + percent + "%  enlightened by our calculation"
         this.setState({guess_count: guess_count_, answerStatus: answerStatus_, correct_count: correct_count_})
 
-        return alert(isCorrect ? String(column.id) + " is Correct!" + answerStatus_ : String(column.id) + " is WRONG!" + answerStatus_+"\n  click on the row for an explanation.");
+        return alert(isCorrect ? String(column.id) + " is Correct!" + answerStatus_ : String(column.id) + " is WRONG!" + answerStatus_ + "\n  click on the row for an explanation.");
     }
-}
+function App() {
+    const columns = React.useMemo(
+        () => [
+            {
 
+                Header: 'Choose and Answer: Click on the header above the column with your Answer!',
+
+                columns: [
+                    {
+                        Header: 'Question',
+                        accessor: headerNamesKQ[0],
+                    },
+                    {
+
+                        accessor: headerNamesKQ[1],
+                    },
+                    {
+                        accessor: headerNamesKQ[2],
+                    },
+                    {
+                        accessor: headerNamesKQ[3],
+                    },
+                    {
+
+                        accessor: headerNamesKQ[4],
+                    },
+                    {
+                        Header: 'Click to select',
+                        accessor: headerNamesKQ[5],
+                    },
+                    {
+                        Header: 'Click to select',
+                        accessor: headerNamesKQ[6],
+                    },
+
+                ],
+            },
+        ],
+        [],
+        [],
+    )
+
+    // We'll start our table without any data
+    const [data, setData] = React.useState([])
+    const [loading, setLoading] = React.useState(false)
+    const [pageCount, setPageCount] = React.useState(0)
+    const [answerStatus, setAnswerStatus] = React.useState("No answers yet")
+
+    const fetchIdRef = React.useRef(0)
+
+                readRemoteFile(question_set_urls[1], {
+                    complete:
+                    },
+                })
+    const fetchData = React.useCallback(({pageSize, pageIndex}) => {
+        // This will get called when the table needs new data
+        // You could fetch your data from literally anywhere,
+        // even a server. But for this example, we'll just fake it.
+
+        // Give this fetch an ID
+        const fetchId = ++fetchIdRef.current
+
+        // Set the loading state
+        setLoading(true)
+
+        // We'll even set a delay to simulate a server here
+        setTimeout(() => {
+            // Only update the data if this is the latest fetch
+            if (fetchId === fetchIdRef.current) {
+                const startRow = pageSize * pageIndex
+                const endRow = startRow + pageSize
+
+
+                // Your server could send back total page count.
+                // For now we'll just fake it, too
+                setPageCount(Math.ceil(serverData.length / pageSize))
+
+                setLoading(false)
+            }
+        }, 1000)
+    }, [])
+
+      return (
+            <Styles>
+                <h1>  {"To see the explanation click in the row with the answers."}</h1>
+                <Table
+                 columns={columns}
+        data={data}
+        getHeaderProps={column => ({
+          onClick: () => alert('Header!'),
+        })}
+        getColumnProps={column => ({
+          onClick: () => alert('Column!'),
+        })}
+        getRowProps={row => ({
+          style: {
+            background: row.index % 2 === 0 ? 'rgba(0,0,0,.1)' : 'white',
+          },
+        })}
+        getCellProps={cellInfo => ({
+          style: {
+            backgroundColor: `hsl(${120 * ((120 - cellInfo.value) / 120) * -1 +
+              120}, 100%, 67%)`,
+          },
+        })}
+      />
+                <div>
+                    <h1>  {answerStatus}.</h1>
+                </div>
+            </Styles>
+        )
+
+}
 export default App

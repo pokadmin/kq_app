@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div class="ui segment">
+    <div class="ui header small"><i class="play icon blue"></i>Lesson Navigation</div>
+    <div style="display: inherit">
+        Lesson 1 of 36        <br />
+        <br />
+        <div class="two ui small buttons">
+            <button class="ui left labeled icon button"
+                onclick=setvid(0,'graham',2);>
+                <i class="left chevron icon"></i>
+                Previous            </button>
+
+            <button class="ui right labeled icon button"  style = "background-color:#ccc;"
+                onclick=setvid(2,'graham',2);>
+                <i class="right chevron icon"></i>
+                Next            </button>
+        </div>
+        <br />
+        <br />
+        <div class="ui fluid action input">
+            <input type="text" placeholder='Go to a lesson number' id="gotext" maxlength="4" />
+            <button class="ui right labeled icon button"
+                onclick=govid('graham',2);>
+                <i class="right arrow icon"></i>
+                Go            </button>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>
