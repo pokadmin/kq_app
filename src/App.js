@@ -1,12 +1,16 @@
 import React from 'react'
 import styled from 'styled-components'
 import {readRemoteFile} from "react-papaparse";
-import {usePagination, useTable} from 'react-table'
+import {usePagination, useTable} from "react-table";
 
 
 const Styles = styled.div`
   padding: 1rem;
   
+  .user {
+    background-color: blue;
+    color: white;
+  }
   table {
     border-spacing: 0;
     border: 1px solid black;
@@ -41,17 +45,18 @@ const Styles = styled.div`
 // new data when pagination state changes
 // We can also add a loading state to let our table know it's loading new data
 function Table({
-  columns,
-  data,
-  fetchData,
-  loading,
-  pageCount: controlledPageCount,
-}) {
+                   columns,
+                   data,
+                   fetchData,
+                   loading,
+                   pageCount: controlledPageCount,
+               }) {
     const {
         getTableProps,
         getTableBodyProps,
         headerGroups,
         prepareRow,
+
         page, // Instead of using 'rows', we'll use page,
         // which has only the rows for the active page
 
@@ -59,6 +64,7 @@ function Table({
         canPreviousPage,
         canNextPage,
         pageOptions,
+
         pageCount,
         gotoPage,
         nextPage,
@@ -69,20 +75,15 @@ function Table({
         {
             columns,
             data,
-      initialState: { pageIndex: 0 }, // Pass our hoisted table state
-      manualPagination: true, // Tell the usePagination
-      // hook that we'll handle our own data fetching
-      // This means we'll also have to provide our own
-      // pageCount.
-      pageCount: controlledPageCount,
+            initialState: {pageIndex: 2, pageSize: 1, answerStatus: "No questions attempted yet."}
         },
         usePagination
     )
 
-  // Listen for changes in pagination and use the state to fetch our new data
-  React.useEffect(() => {
-    fetchData({ pageIndex, pageSize })
-  }, [fetchData, pageIndex, pageSize])
+    // Listen for changes in pagination and use the state to fetch our new data
+    React.useEffect(() => {
+        fetchData({data, pageSize})
+    }, [fetchData, data, pageSize])
 
     // Render the UI for your table
     return (
@@ -123,17 +124,17 @@ function Table({
                         </tr>
                     )
                 })}
-          <tr>
-            {loading ? (
-              // Use our custom loading state to show a loading indicator
-              <td colSpan="10000">Loading...</td>
-            ) : (
-              <td colSpan="10000">
-                Showing {page.length} of ~{controlledPageCount * pageSize}{' '}
-                results
-              </td>
-            )}
-          </tr>
+                <tr>
+                    {loading ? (
+                        // Use our custom loading state to show a loading indicator
+                        <td colSpan="10000">Loading...</td>
+                    ) : (
+                        <td colSpan="10000">
+                            Showing {page.length} of ~{controlledPageCount * pageSize}{' '}
+                            results
+                        </td>
+                    )}
+                </tr>
                 </tbody>
             </table>
             {/*
@@ -230,38 +231,41 @@ function App() {
                 ],
             },
         ],
-    []
+        []
     )
     // We'll start our table without any data
     const [data, setData] = React.useState([])
-    const [answerStatus, setAnswerStatus] = React.useState("No answers yet")
+    // const [answerStatus, setAnswerStatus] = React.useState("No answers yet")
     const [loading, setLoading] = React.useState(false)
     const [pageCount, setPageCount] = React.useState(0)
-    const fetchIdRef = React.useRef(0)
+    // const fetchIdRef = React.useRef(0)
     //const data = React.useMemo(() => makeData(100000), [])
     const q1_url = "https://raw.githubusercontent.com/pokadmin/kq_app/main/public/data/cleaned_questions_set_1.tsv"
-    const fetchData =React.useCallback(({ pageSize, pageIndex }) => {
-            setLoading(true)
+    // const fetchData = React.useCallback(({results}) => {
+    //         console.log('Results:', results);
+    //         setData(results.data);
+    //         setPageCount(Math.ceil(results.data.length / 1))
+    //         setLoading(false)
+    //     },[]
+    // )
 
-        readRemoteFile(q1_url, {
-            complete: (results) => {
-                console.log('Results:', results);
-                setData(results.data);
-                setPageCount(Math.ceil(results.data.length / pageSize))
-                setLoading(false)
-      }
-    }, 1000)
-  }, [])
+      const fetchData =
+        (results) => {
+            console.log('Results:', results);
+            setData(data,results.data );
+        }
+readRemoteFile(q1_url, {  fetchData  })
+
 
     return (
         <Styles>
-      <Table
-        columns={columns}
-        data={data}
-        fetchData={fetchData}
-        loading={loading}
-        pageCount={pageCount}
-      />
+            <Table
+                columns={columns}
+                data={data}
+                fetchData={fetchData}
+                loading={loading}
+                pageCount={pageCount}
+            />
         </Styles>
     )
 }
