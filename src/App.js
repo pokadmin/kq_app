@@ -288,11 +288,10 @@ class App extends Component {
             rows: []
         })
 
-        const DATA_URL_GITHUB_MAIN = "https://raw.githubusercontent.com/pokadmin/kq_app/main/public/data/cleaned_questions_set_1.tsv"
-        const DATA_URL_DEV_ONLY_LOCALHOST_PORT_3000 = "http://localhost:3000/data/cleaned_questions_set_1.tsv"
+        const  DATA_URL_GITHUB_MAIN = "https://raw.githubusercontent.com/pokadmin/kq_app/main/public/data/cleaned_questions_set_1.tsv"
         readRemoteFile(DATA_URL_GITHUB_MAIN, {
             complete: (results) => {
-                console.log('Results:', results);
+                console.log('Results from: ['+DATA_URL_GITHUB_MAIN+']', results);
                 this.setState({
                     // update state
                     rows: results.data,
@@ -362,7 +361,8 @@ class App extends Component {
             let explanation_ = row.original[7]
             let videos = row.original[8]
             let pods = row.original[9]
-            let review = row.original[10]
+            // eslint-disable-next-line
+            let reviewer = row.original[10]
 
             this.setState({explanation: explanation_})
             return alert("Here is the explanation: \n"+explanation_+"\nVideos: "+videos+"\nPodcasts"+pods);
