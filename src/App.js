@@ -245,9 +245,6 @@ class App extends Component {
 
     componentDidMount() {
 
-        const q1_url = "https://raw.githubusercontent.com/pokadmin/kq_app/main/public/data/cleaned_questions_set_1.tsv"
-        const q2_url_local = "http://localhost:3000/data/cleaned_questions_set_1.tsv"
-        const question_set_urls = [q1_url, q2_url_local]
         this.setState({
             columns: [
 
@@ -291,9 +288,10 @@ class App extends Component {
             rows: []
         })
 
-        readRemoteFile(question_set_urls[1], {
+        const  DATA_URL_GITHUB_MAIN = "https://raw.githubusercontent.com/pokadmin/kq_app/main/public/data/cleaned_questions_set_1.tsv"
+        readRemoteFile(DATA_URL_GITHUB_MAIN, {
             complete: (results) => {
-                console.log('Results:', results);
+                console.log('Results from: ['+DATA_URL_GITHUB_MAIN+']', results);
                 this.setState({
                     // update state
                     rows: results.data,
