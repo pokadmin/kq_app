@@ -61,11 +61,21 @@ class App extends Component {
                         <h1>{(this.state.rows.length < 1) ? "Nothing" : this.state.rows[this.state.current_page][0]}.</h1>
                     </div>
                 </header>
+                <table>
+                    <tr>
+                        <td className="titles"> 1</td>
+                        <td onClick={() => this.my_anwser_handler(1)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.rows[this.state.current_page][1]}</td>
+                    </tr>
+                     <tr>
+                        <td className="titles"> 2</td>
+                        <td onClick={() => this.my_anwser_handler(2)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.rows[this.state.current_page][2]}</td>
+                    </tr>
+                    <tr>
+                        <td className="titles"> 3</td>
+                        <td onClick={() => this.my_anwser_handler(0)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.rows[this.state.current_page][3]}</td>
+                    </tr>
+                </table>
 
-
-                <div>
-                    <h1 onClick={() => this.my_anwser_handler(1)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.rows[this.state.current_page][1]}.</h1>
-                </div>
 
                 <div>
                     <h1 onClick={() => this.my_anwser_handler(3)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.rows[this.state.current_page][2]}.</h1>
@@ -106,8 +116,8 @@ class App extends Component {
         }
     }
 
-    my_anwser_handler(column) {
-        let isCorrect = ("1" === String(column.id))
+    my_anwser_handler(id) {
+        let isCorrect = ("1" === String(id))
         let guess_count_ = this.state.guess_count + 1
         let correct_count_ = this.state.correct_count
         if (isCorrect) {
@@ -117,7 +127,7 @@ class App extends Component {
         let answerStatus_ = "You have " + correct_count_ + " correct answers and have guessed " + guess_count_ + " times. You are " + percent + "%  enlightened by our calculation"
         this.setState({guess_count: guess_count_, answerStatus: answerStatus_, correct_count: correct_count_})
 
-        return alert(isCorrect ? String(column.id) + " is Correct!" + answerStatus_ : String(column.id) + " is WRONG!" + answerStatus_ + "\n  click on the row for an explanation.");
+        return alert(isCorrect ? String(id) + " is Correct!" + answerStatus_ : String(id) + " is WRONG!" + answerStatus_ + "\n  click on the row for an explanation.");
     }
 }
 
