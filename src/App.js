@@ -3,12 +3,22 @@ import './App.css';
 import React, {Component} from 'react';
 import {readRemoteFile} from "react-papaparse";
 
+function shuffle(arr) {
+        arr = [...arr]
+        const shuffled = []
+        while (arr.length) {
+            const rand = Math.floor(Math.random() * arr.length)
+            shuffled.push(arr.splice(rand, 1)[0])
+        }
+        return shuffled
+}
 class App extends Component {
     state = {
         // initial state
         rows: [],
         columns: [],
         data: [],
+        randomized_row:[],
         potentialAnswers: [],
         current_page: 0,
         correctIndex: -1,
@@ -28,7 +38,7 @@ class App extends Component {
             current_page: 0,
             explanation: "No explanation",
             links: "no links",
-            answerStatus: "You have not yet answered any questions. Click on the header to select an answer",
+            answerStatus: "You have not yet answered any questions. Click a button A to F to select an answer",
         })
 
         const DATA_URL_GITHUB_MAIN = "https://raw.githubusercontent.com/pokadmin/kq_app/main/public/data/cleaned_questions_set_1.tsv"
@@ -51,18 +61,17 @@ class App extends Component {
 
     }
 
-
     render() {
         return (
             <div className="App">
-                <header className="App-header" style={{height:200, alignItems:"flex-start",verticalAlign:"bottom",alignContent:"flex-start"}}>
+                <header className="App-header" style={{maxHeight:150,minHeight:150}}>
                     <div>
-                        <h2 style={{ alignItems:"flex-start",verticalAlign:"bottom",alignContent:"flex-start"}}>
+                        <h2 style={{verticalAlign:"bottom"}}>
                             {(this.state.rows.length < 1) ? "Nothing" : this.state.rows[this.state.current_page][0]}
                         </h2>
                     </div>
                 </header>
-                <table style={{height:300, verticalAlign:"bottom",alignItems:"flex-start", textAlign:"left",alignContent:"flex-start"}}>
+                <table style={{ minHeight:300,height:300, verticalAlign:"bottom"}}>
                     <tr>
                         <td>
                             <button onClick={() => this.my_anwser_handler(1)}> A</button>
@@ -115,30 +124,41 @@ class App extends Component {
 
     nextPage() {
         if (this.state.current_page <  (this.state.rows.length-1)) {
-            this.setState({current_page: this.state.current_page + 1})
+            let new_current_page = this.state.current_page + 1
+            let randomized_row =  this.setCurrentRow(this.state.rows[new_current_page])
+
+            this.setState({current_page:new_current_page,randomized_row:  randomized_row})
         }else {
           return alert("You are on the last page");
         }
     }
-
     previousPage() {
         if (this.state.current_page > 0) {
             this.setState({current_page: this.state.current_page -1 })
+
         } else {
           return alert("You are on the first page");
 
         }
     }
-    currentRow(row) {
-        let original_ = row
-        if (original_) {
-            let explanation_ = row.original[7]
-            let videos = row.original[8]
-            let pods = row.original[9]
-            // let review = row.original[10]
 
-            this.setState({explanation: explanation_})
-            return alert("Here is the explanation: \n" + explanation_ + "\nVideos: " + videos + "\nPodcasts" + pods);
+    setCurrentRow(row:[]) {
+        if (row) {
+            let explanation = row[7]
+            let videos = row[8]
+            let pods = row[9]
+            let ordered_answers = row.slice(1,7)
+            // let review = row.original[10]
+            var answers_length = ordered_answers.length;
+            let random_answers= Array()
+            let random_mapping= Array()
+            random_mapping.forEach((element, index,array) => { array.push(index)} )
+            shuffle(random_mapping)
+            random_answers.forEach((element, index,array,random_mapping,ordered_answers) =>
+            { array.push(ordered_answers[random_mapping[index]])} )
+
+            this.setState({explanation: explanation})
+           // return alert("Here is the explanation: \n" + explanation + "\nVideos: " + videos + "\nPodcasts" + pods);
 
         }
     }
@@ -156,6 +176,6 @@ class App extends Component {
 
         return alert(isCorrect ? String(id) + " is Correct!" + answerStatus_ : String(id) + " is WRONG!" + answerStatus_ + "\n  click on the row for an explanation.");
     }
-}
 
+}
 export default App

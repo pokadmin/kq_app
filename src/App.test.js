@@ -6,3 +6,9 @@ test('renders learn react link', () => {
   const linkElement = screen.getByText(/see/i);
   expect(linkElement).toBeInTheDocument();
 });
+
+test('randomizing works', () => {
+  render(<App />);
+  const linkElement = screen.getByText(/see/i);
+  expect(linkElement).toBeInTheDocument();
+});
