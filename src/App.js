@@ -55,40 +55,55 @@ class App extends Component {
     render() {
         return (
             <div className="App">
-                <header className="App-header">
-                    Something1 {this.state.answerStatus}
+                <header className="App-header" style={{height:200, alignItems:"flex-start",verticalAlign:"bottom",alignContent:"flex-start"}}>
                     <div>
-                        <h1>{(this.state.rows.length < 1) ? "Nothing" : this.state.rows[this.state.current_page][0]}.</h1>
+                        <h2 style={{ alignItems:"flex-start",verticalAlign:"bottom",alignContent:"flex-start"}}>
+                            {(this.state.rows.length < 1) ? "Nothing" : this.state.rows[this.state.current_page][0]}
+                        </h2>
                     </div>
                 </header>
-                <table>
+                <table style={{height:300, verticalAlign:"bottom",alignItems:"flex-start", textAlign:"left",alignContent:"flex-start"}}>
                     <tr>
-                        <td className="titles"> 1</td>
-                        <td onClick={() => this.my_anwser_handler(1)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.rows[this.state.current_page][1]}</td>
-                    </tr>
-                     <tr>
-                        <td className="titles"> 2</td>
-                        <td onClick={() => this.my_anwser_handler(2)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.rows[this.state.current_page][2]}</td>
+                        <td>
+                            <button onClick={() => this.my_anwser_handler(1)}> A</button>
+                        </td>
+                        <td> {(this.state.rows.length < 1) ? "Nothing" : this.state.rows[this.state.current_page][1]}</td>
                     </tr>
                     <tr>
-                        <td className="titles"> 3</td>
-                        <td onClick={() => this.my_anwser_handler(0)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.rows[this.state.current_page][3]}</td>
+                        <td>
+                            <button onClick={() => this.my_anwser_handler(2)}> B</button>
+                        </td>
+                        <td onClick={() => this.my_anwser_handler(1)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.rows[this.state.current_page][2]}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button onClick={() => this.my_anwser_handler(3)}> C</button>
+                        </td>
+                        <td onClick={() => this.my_anwser_handler(3)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.rows[this.state.current_page][3]}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button onClick={() => this.my_anwser_handler(4)}> D</button>
+                        </td>
+                        <td onClick={() => this.my_anwser_handler(4)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.rows[this.state.current_page][4]}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button onClick={() => this.my_anwser_handler(5)}> E</button>
+                        </td>
+                        <td onClick={() => this.my_anwser_handler(5)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.rows[this.state.current_page][5]}</td>
+                    </tr>
+                      <tr>
+                        <td>
+                            <button onClick={() => this.my_anwser_handler(6)}> F</button>
+                        </td>
+                        <td onClick={() => this.my_anwser_handler(6)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.rows[this.state.current_page][6]}</td>
                     </tr>
                 </table>
 
-
                 <div>
-                    <h1 onClick={() => this.my_anwser_handler(3)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.rows[this.state.current_page][2]}.</h1>
-                </div>
-                <div>
-                    <h1>  {(this.state.rows.length < 1) ? "Nothing" : this.state.rows[0][3]}.</h1>
-                </div>
-
-                <div>
-                    <h1>  {(this.state.rows.length < 1) ? "Nothing" : this.state.rows[0][4]}.</h1>
-                </div>
-                <div>
-                    <button onClick={() => this.nextPage()}> Next Page</button>
+                    <button onClick={() => this.previousPage()}> Pevious Page</button>
+                     <button onClick={() => this.nextPage()}> Next Page</button>
                 </div>
                 <div>
                     <h1>  {this.state.answerStatus}</h1>
@@ -99,9 +114,21 @@ class App extends Component {
     }
 
     nextPage() {
-        this.setState({current_page: this.state.current_page + 1})
+        if (this.state.current_page <  (this.state.rows.length-1)) {
+            this.setState({current_page: this.state.current_page + 1})
+        }else {
+          return alert("You are on the last page");
+        }
     }
 
+    previousPage() {
+        if (this.state.current_page > 0) {
+            this.setState({current_page: this.state.current_page -1 })
+        } else {
+          return alert("You are on the first page");
+
+        }
+    }
     currentRow(row) {
         let original_ = row
         if (original_) {
