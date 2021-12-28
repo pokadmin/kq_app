@@ -119,14 +119,14 @@ class App extends Component {
                 </table>
 
                 <div>
-                    <button onClick={() => this.previousPage()}> Pevious Page</button>
-                    <button onClick={() => this.nextPage()}> Next Page</button>
+                    <button onClick={() => this.previousPage()}>Previous Page</button>
+                    <button onClick={() => this.nextPage()}>Next Page</button>
                 </div>
                 <div>
                     Current page is  {this.state.current_page}  of {(this.state.rows.length < 1) ? "Unknown" : this.state.rows.length}
                 </div>
                 <div>
-                    Change page to: <textarea onChange={(event => this.textToPage(event))}>59</textarea>
+                    Change page to: <textarea onChange={(event => this.textToPage(event))}>55</textarea> (Then Previous Page or Next Page to work around bug)
                 </div>
                 <div>
                     <h1>  {this.state.answerStatus}</h1>
