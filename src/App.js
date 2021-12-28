@@ -1,42 +1,7 @@
-import React, {Component} from 'react'
-import styled from 'styled-components'
+import './App.css';
+// import { useTable } from 'react-table'
+import React, {Component} from 'react';
 import {readRemoteFile} from "react-papaparse";
-import {useColumnOrder, usePagination, useTable} from 'react-table'
-
-const headerNames = ["0", "1", "2", "3", "4", "5", "6", "Explanation", "PoK Program Link", "PoK Podcast Link", "Contributor", "Verifier", "Verified"]
-
-const Styles = styled.div`
-  padding: 1rem;
-  
-  .user {
-    background-color: blue;
-    color: white;
-  }
-  table {
-    border-spacing: 0;
-    border: 1px solid black;
-    tr {
-      :last-child {
-        td {
-          border-bottom: 0;
-        }
-      }
-    }
-    th,
-    td {
-      margin: 0;
-      padding: 0.5rem;
-      border-bottom: 1px solid black;
-      border-right: 1px solid black;
-      :last-child {
-        border-right: 0;
-      }
-    }
-  }
-  .pagination {
-    padding: 0.5rem;
-  }
-`
 
 function shuffle(arr) {
     arr = [...arr]
@@ -48,197 +13,21 @@ function shuffle(arr) {
     return shuffled
 }
 
-// Create a default prop getter
-const defaultPropGetter = () => ({})
-
-function Table({
-                   columns,
-                   data,
-                   getHeaderProps = defaultPropGetter,
-                   getColumnProps = defaultPropGetter,
-                   getRowProps = defaultPropGetter,
-                   getCellProps = defaultPropGetter
-
-               }) {
-    // Use the state and functions returned from useTable to build your UI
-    const {
-        getTableProps,
-        getTableBodyProps,
-        headerGroups,
-        prepareRow,
-        page, // Instead of using 'rows', we'll use page,
-        // which has only the rows for the active page
-
-        // The rest of these things are super handy, too ;)
-        canPreviousPage,
-        canNextPage,
-        pageOptions,
-        pageCount,
-        gotoPage,
-        nextPage,
-        previousPage,
-        setPageSize,
-        setColumnOrder,
-        visibleColumns,
-        state: {pageIndex, pageSize, answerStatus},
-    } = useTable(
-        {
-            columns,
-            data,
-            initialState: {pageIndex: 2, pageSize: 1, answerStatus: "No questions attempted yet."}
-        },
-        useColumnOrder,
-        usePagination
-    )
-    // eslint-disable-next-line no-unused-vars
-    const randomizeColumns = () => {
-
-        let question_item = visibleColumns[0]
-        let random_order = shuffle(visibleColumns.map(d => d.id))
-        // We shuffled all items, good cause we want random order. But we want the question first. Swapp
-        let question_item_random_index = random_order.indexOf(question_item.id)
-        let non_question_item_at_0 = random_order[0]
-        random_order[0] = "0"
-        random_order[question_item_random_index] = non_question_item_at_0
-        setColumnOrder(random_order)
-    }
-
-    function randomizeNextPage() {
-        randomizeColumns();
-        return nextPage();
-    }
-
-    function gotoPageRandomized(page) {
-        randomizeColumns();
-        gotoPage(page)
-    }
-
-    // Render the UI for your table
-    return (
-        <>
-    {/*
-        Pagination can be built however you'd like.
-        This is just a very basic UI implementation:
-      */}
-            <div className="pagination">
-                <button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
-                    {'<<'}
-                </button>
-                {' '}
-                <button onClick={() => previousPage()} disabled={!canPreviousPage}>
-                    {'<'}
-                </button>
-                {' '}
-                <button onClick={() => randomizeNextPage()} disabled={!canNextPage}>
-                    {'>'}
-                </button>
-                {' '}
-                <button onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage}>
-                    {'>>'}
-                </button>
-                {' '}
-                <span>
-          Page{' '}
-                    <strong>
-            {pageIndex + 1} of {pageOptions.length}
-          </strong>{' '}
-        </span>
-                <span>
-          | Go to page:{' '}
-                    <input
-                        type="number"
-                        defaultValue={pageIndex + 1}
-                        onChange={e => {
-                            const page = e.target.value ? Number(e.target.value) - 1 : 0
-                            gotoPageRandomized(page);
-                        }}
-                        style={{width: '100px'}}
-                    />
-        </span>{' '}
-                <select
-                    value={pageSize}
-                    onChange={e => {
-                        setPageSize(Number(e.target.value))
-                    }}
-                >
-                    {[1, 2, 3, 4, 5, 50].map(pageSize => (
-                        <option key={pageSize} value={pageSize}>
-                            Show {pageSize}
-                        </option>
-                    ))}
-                </select>
-            </div>
-
-            <table {...getTableProps()}>
-                <thead>
-                {headerGroups.map(headerGroup => (
-                    <tr {...headerGroup.getHeaderGroupProps()}>
-                        {headerGroup.headers.map(column => (
-                            <th
-                                {...column.getHeaderProps([
-                                    {
-                                        className: column.className,
-                                        style: column.style,
-                                    },
-                                    getColumnProps(column),
-                                    getHeaderProps(column),
-                                ])}
-                            >
-                                {column.render('Header')}</th>
-                        ))}
-                    </tr>
-                ))}
-                </thead>
-                <tbody {...getTableBodyProps()}>
-                {page.map((row, i) => {
-                    prepareRow(row)
-                    return (
-                        <tr {...row.getRowProps(getRowProps(row))}>
-                            {row.cells.map(cell => {
-
-                                return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
-                            })}
-                        </tr>
-                    )
-                })}
-                </tbody>
-            </table>
-
-           <pre>
-
-        <code>
-
-          {JSON.stringify(
-              {
-                  pageIndex,
-                  pageCount,
-                  //   canNextPage,
-                  //   canPreviousPage,
-                  //   answerStatus,
-              },
-              null,
-              2
-          )}
-        </code>
-      </pre>
-        </>
-    )
-}
-
-// Components / Classes are better...
-// How to convert : https://www.digitalocean.com/community/tutorials/five-ways-to-convert-react-class-components-to-functional-components-with-react-hooks
 class App extends Component {
     state = {
         // initial state
         rows: [],
         columns: [],
         data: [],
+        randomized_row: [],
         potentialAnswers: [],
+        current_page: 0,
         correctIndex: -1,
         guess_count: 0,
         correct_count: 0,
         explanation: "No explanation",
-        links: "no links",
+        videos: "No Videos",
+        pods: "No Podcasts",
         answerStatus: "You have not yet answered any questions. Click on the header to select an answer",
 
     }
@@ -246,141 +35,200 @@ class App extends Component {
     componentDidMount() {
 
         this.setState({
-            columns: [
-
-                {
-
-                    Header: 'Choose and Answer: Click on the header above the column with your Answer!',
-
-                    columns: [
-                        {
-                            Header: 'Question',
-                            accessor: headerNames[0],
-                        },
-                        {
-                            Header: 'Click to select',
-                            accessor: headerNames[1],
-                        },
-                        {
-                            Header: 'Click to select',
-                            accessor: headerNames[2],
-                        },
-                        {
-                            Header: 'Click to select',
-                            accessor: headerNames[3],
-                        },
-                        {
-                            Header: 'Click to select',
-                            accessor: headerNames[4],
-                        },
-                        {
-                            Header: 'Click to select',
-                            accessor: headerNames[5],
-                        },
-                        {
-                            Header: 'Click to select',
-                            accessor: headerNames[6],
-                        },
-
-                    ],
-                },
-            ],
-            rows: []
+            rows: [[]],
+            data: [],
+            ordered_answers: [],
+            random_answers: [],
+            random_mapping: [],
+            current_row: [],
+            current_page: 0,
+            explanation: "No explanation",
+            videos: "No Videos",
+            pods: "No Podcasts",
+            answerStatus: "You have not yet answered any questions. Click a button A to F to select an answer",
         })
 
-        const  DATA_URL_GITHUB_MAIN = "https://raw.githubusercontent.com/pokadmin/kq_app/main/public/data/cleaned_questions_set_1.tsv"
+        const DATA_URL_GITHUB_MAIN = "https://raw.githubusercontent.com/pokadmin/kq_app/main/public/data/cleaned_questions_set_1.tsv"
         readRemoteFile(DATA_URL_GITHUB_MAIN, {
             complete: (results) => {
-                console.log('Results from: ['+DATA_URL_GITHUB_MAIN+']', results);
+                console.log('Results from: [' + DATA_URL_GITHUB_MAIN + ']', results);
+
                 this.setState({
                     // update state
                     rows: results.data,
                     data: results,
-                    explanation: "No explanation",
-                    links: "no links",
+                    current_page: 0,
                     answerStatus: "You have not yet answered any questions. Click on the header to select an answer",
                 });
+                this.go_to_page(0)
             },
         })
 
 
     }
 
-
     render() {
         return (
-            <Styles>
-               <h1>  {"To see the explanation click in the row with the answers."}</h1>
-                <Table columns={
-                    this.state.columns
-                }
-                       data=
-                           {
-                               this.state.rows
-                           }
-                       getHeaderProps={column => ({
-                           onClick: () => {
-                               this.my_anwser_handler(column)
-                           },
-                           style:
-                               {
-                                   background: (("0" === String(column.id)) ? 'rgba(222,200,0,.4)' : 'rgba(0,0,230,.1)'),
-                               }
+            <div className="App">
+                <header className="App-header" style={{maxHeight: 150, minHeight: 150}}>
+                    <div>
+                        <h2 style={{verticalAlign: "bottom"}}>
+                            {(this.state.rows.length < 1) ? "Nothing" : this.state.rows[this.state.current_page][0]}
+                        </h2>
+                    </div>
+                </header>
+                <table style={{minHeight: 300, height: 300, verticalAlign: "bottom"}}>
+                    <tbody>
+                    <tr>
+                        <td>
+                            <button onClick={() => this.my_anwser_handler(1)}> A</button>
+                        </td>
+                        <td> {(this.state.rows.length < 1) ? "Nothing" : this.state.randomized_row[0]}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button onClick={() => this.my_anwser_handler(2)}> B</button>
+                        </td>
+                        <td onClick={() => this.my_anwser_handler(1)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.randomized_row[1]}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button onClick={() => this.my_anwser_handler(3)}> C</button>
+                        </td>
+                        <td onClick={() => this.my_anwser_handler(3)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.randomized_row[2]}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button onClick={() => this.my_anwser_handler(4)}> D</button>
+                        </td>
+                        <td onClick={() => this.my_anwser_handler(4)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.randomized_row[3]}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button onClick={() => this.my_anwser_handler(5)}> E</button>
+                        </td>
+                        <td onClick={() => this.my_anwser_handler(5)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.randomized_row[4]}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button onClick={() => this.my_anwser_handler(6)}> F</button>
+                        </td>
+                        <td onClick={() => this.my_anwser_handler(6)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.randomized_row[5]}</td>
+                    </tr>
+                    </tbody>
+                </table>
 
-                       })}
-
-                       getRowProps={row => ({
-                            onClick: () => {
-                               this.currentRow(row)
-                           },
-                           once:()=>{
-                               this.currentRow(row)
-                           },
-                           row: ()=>{ this.currentRow(row)},
-                           style: {
-                               background: row.index % 2 === 0 ? 'rgba(0,0,0,.1)' : 'white',
-                           },
-                       })}
-                       // getCellProps={cellInfo => ({
-                       //     style: {
-                       //         backgroundColor: `hsl(${120 * ((120 - cellInfo.value) / 120) * -1 +
-                       //         120}, 100%, 67%)`,
-                       //     },
-                       // })}
-                />
                 <div>
-                    <h1>  {this.state.answerStatus }.</h1>
+                    <button onClick={() => this.previousPage()}> Pevious Page</button>
+                    <button onClick={() => this.nextPage()}> Next Page</button>
                 </div>
-            </Styles>
+                <div>
+                    Current page is  {this.state.current_page}  of {(this.state.rows.length < 1) ? "Unknown" : this.state.rows.length}
+                </div>
+                <div>
+                    Change page to: <textarea onChange={(event => this.textToPage(event))}>59</textarea>
+                </div>
+                <div>
+                    <h1>  {this.state.answerStatus}</h1>
+                </div>
+            </div>
         )
+            ;
     }
 
-    currentRow(row) {
-        let original_ = row
-        if (original_) {
-            let explanation_ = row.original[7]
-            let videos = row.original[8]
-            let pods = row.original[9]
-            let review = row.original[10]
+    nextPage() {
+        if (this.state.current_page < (this.state.rows.length - 1)) {
+            let new_current_page = this.state.current_page + 1
+            let randomized_row = this.setCurrentRow(this.state.rows[new_current_page])
+            this.setState({current_page: new_current_page, randomized_row: randomized_row})
+        } else {
+            return alert("You are on the last page");
+        }
+    }
 
-            this.setState({explanation: explanation_})
-            return alert("Here is the explanation: \n"+explanation_+"\nVideos: "+videos+"\nPodcasts"+pods);
+    go_to_page(target_page: Number) {
+        if (target_page < this.state.rows.length && (target_page > -1)) {
+            let new_current_page = target_page
+            let randomized_row = this.setCurrentRow(this.state.rows[new_current_page])
+            this.setState({current_page: new_current_page, randomized_row: randomized_row})
+        } else {
+            return alert("Not a valid page select between 0 and " + (this.state.rows.length - 1));
+        }
+    }
+
+    previousPage() {
+        if (this.state.current_page > 0) {
+            let new_current_page = this.state.current_page - 1
+            let randomized_row = this.setCurrentRow(this.state.rows[new_current_page])
+            this.setState({current_page: new_current_page})
+        } else {
+            return alert("You are on the first page");
 
         }
     }
 
-    my_anwser_handler(column) {
-        let isCorrect = ("1" === String(column.id))
+    setCurrentRow(row: []) {
+        if (row) {
+            let explanation = row[7]
+            let videos = row[8]
+            let pods = row[9]
+            let ordered_answers: [] = row.slice(1, 7)
+            // let review = row.original[10]
+            //let answers_length = ordered_answers.length;
+            let random_answers = []
+            let random_mapping = [0, 1, 2, 3, 4, 5]
+            // random_mapping.forEach((element, index, array) => {
+            //     array.push(index)
+            // })
+            random_mapping = shuffle(random_mapping)
+            for (let i = 0; i < random_mapping.length; i++) {
+                random_answers.push(ordered_answers[random_mapping[i]])
+            }
+
+
+            this.setState({
+                explanation: explanation,
+                ordered_answers: ordered_answers,
+                random_answers: random_answers,
+                random_mapping: random_mapping,
+                current_row: row,
+                videos: videos,
+                pods: pods
+            })
+            // return alert("Here is the explanation: \n" + explanation + "\nVideos: " + videos + "\nPodcasts" + pods);
+            return random_answers
+        }
+    }
+
+    my_anwser_handler(id) {
+        // Zero is the position of the correct answer in the original order of the questions. Then we randomize the answers.
+        // We keep the order we randomized them in random_mapping
+        let isCorrect = (0 === this.state.random_mapping[id - 1])
         let guess_count_ = this.state.guess_count + 1
         let correct_count_ = this.state.correct_count
+        let letter_guess = String.fromCharCode(64 + id)
+        let right_wrong = isCorrect ? letter_guess + " is Correct!  " : letter_guess + " is WRONG!!! ";
         if (isCorrect) {
             correct_count_ = correct_count_ + 1
         }
         let percent = (correct_count_ / guess_count_) * 100
         let answerStatus_ = "You have " + correct_count_ + " correct answers and have guessed " + guess_count_ + " times. You are " + percent + "%  enlightened by our calculation"
-        this.setState({guess_count: guess_count_, answerStatus: answerStatus_, correct_count: correct_count_})
+        this.setState({
+            guess_count: guess_count_,
+            answerStatus: answerStatus_,
+            correct_count: correct_count_
+        })
+        return alert(right_wrong + answerStatus_ + "\n  Explanation : " + this.state.explanation + "\nVideos: " + this.state.videos + "\nPodcasts" + this.state.pods);
+    }
 
-        return alert(isCorrect ? String(column.id) + " is Correct!" + answerStatus_ : String(column.id) + " is WRONG!" + answerStatus_+"\n  click on the row for an explanation.");
+    textToPage(param) {
+        let readValue = param.target.value;
+        let page_number = Number(readValue);
+        if ((this.state.rows.length > 0) && (page_number < this.state.rows.length)) {
+          this.setState(
+              { current_page: page_number
+        })
+        }
     }
 }
 
