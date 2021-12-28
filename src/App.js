@@ -160,7 +160,7 @@ class App extends Component {
         if (this.state.current_page > 0) {
             let new_current_page = this.state.current_page - 1
             let randomized_row = this.setCurrentRow(this.state.rows[new_current_page])
-            this.setState({current_page: new_current_page})
+            this.setState({current_page: new_current_page, randomized_row: randomized_row})
         } else {
             return alert("You are on the first page");
 
