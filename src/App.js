@@ -123,8 +123,10 @@ class App extends Component {
                     <button onClick={() => this.nextPage()}> Next Page</button>
                 </div>
                 <div>
-                    current page {this.state.current_page}
-                    <textarea onChange={(event => this.textToPage(event))}>59</textarea>
+                    Current page is  {this.state.current_page}  of {(this.state.rows.length < 1) ? "Unknown" : this.state.rows.length}
+                </div>
+                <div>
+                    Change page to: <textarea onChange={(event => this.textToPage(event))}>59</textarea>
                 </div>
                 <div>
                     <h1>  {this.state.answerStatus}</h1>
