@@ -13,6 +13,12 @@ function shuffle(arr) {
     return shuffled
 }
 
+const correct_answer_response_text = " is Correct!"
+const incorrect_answer_response_text = " is Incorrect!"
+const shared_answer_response_text = "Your Score is "
+
+const answerStatus = "You have not yet answered any questions. Click a button A to F to select an answer";
+
 class App extends Component {
     state = {
         // initial state
@@ -28,7 +34,10 @@ class App extends Component {
         explanation: "No explanation",
         videos: "No Videos",
         pods: "No Podcasts",
-        answerStatus: "You have not yet answered any questions. Click on the header to select an answer",
+        answerStatus: answerStatus,
+        show_result: false,
+        result_text: "No results yet",
+        is_correct: false,
 
     }
 
@@ -45,7 +54,9 @@ class App extends Component {
             explanation: "No explanation",
             videos: "No Videos",
             pods: "No Podcasts",
-            answerStatus: "You have not yet answered any questions. Click a button A to F to select an answer",
+            answerStatus: answerStatus,
+            show_result: false,
+            is_correct: false,
         })
 
         const DATA_URL_GITHUB_MAIN = "https://raw.githubusercontent.com/pokadmin/kq_app/main/public/data/cleaned_questions_set_1.tsv"
@@ -58,7 +69,8 @@ class App extends Component {
                     rows: results.data,
                     data: results,
                     current_page: 0,
-                    answerStatus: "You have not yet answered any questions. Click on the header to select an answer",
+                    answerStatus: answerStatus,
+
                 });
                 this.go_to_page(0)
             },
@@ -77,70 +89,97 @@ class App extends Component {
                         </h2>
                     </div>
                 </header>
-                <table style={{minHeight: 300, height: 300, verticalAlign: "bottom"}}>
-                    <tbody>
-                    <tr>
-                        <td>
-                            <button onClick={() => this.my_anwser_handler(1)}> A</button>
-                        </td>
-                        <td> {(this.state.rows.length < 1) ? "Nothing" : this.state.randomized_row[0]}</td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <button onClick={() => this.my_anwser_handler(2)}> B</button>
-                        </td>
-                        <td onClick={() => this.my_anwser_handler(1)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.randomized_row[1]}</td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <button onClick={() => this.my_anwser_handler(3)}> C</button>
-                        </td>
-                        <td onClick={() => this.my_anwser_handler(3)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.randomized_row[2]}</td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <button onClick={() => this.my_anwser_handler(4)}> D</button>
-                        </td>
-                        <td onClick={() => this.my_anwser_handler(4)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.randomized_row[3]}</td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <button onClick={() => this.my_anwser_handler(5)}> E</button>
-                        </td>
-                        <td onClick={() => this.my_anwser_handler(5)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.randomized_row[4]}</td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <button onClick={() => this.my_anwser_handler(6)}> F</button>
-                        </td>
-                        <td onClick={() => this.my_anwser_handler(6)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.randomized_row[5]}</td>
-                    </tr>
-                    </tbody>
-                </table>
 
-                <div>
-                    <button onClick={() => this.previousPage()}>Previous Page</button>
-                    <button onClick={() => this.nextPage()}>Next Page</button>
+                {/*
+                                Think it is better to leave it up. <div hidden={this.state.show_result} className="Tutoring">
+*/}
+
+                <div className="Tutoring">
+                    <table style={{minHeight: 300, height: 300, verticalAlign: "bottom"}}>
+                        <tbody>
+                        <tr>
+                            <td>
+                                <button onClick={() => this.answerHandler(1)}> A</button>
+                            </td>
+                            <td> {(this.state.rows.length < 1) ? "Nothing" : this.state.randomized_row[0]}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button onClick={() => this.answerHandler(2)}> B</button>
+                            </td>
+                            <td onClick={() => this.answerHandler(1)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.randomized_row[1]}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button onClick={() => this.answerHandler(3)}> C</button>
+                            </td>
+                            <td onClick={() => this.answerHandler(3)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.randomized_row[2]}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button onClick={() => this.answerHandler(4)}> D</button>
+                            </td>
+                            <td onClick={() => this.answerHandler(4)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.randomized_row[3]}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button onClick={() => this.answerHandler(5)}> E</button>
+                            </td>
+                            <td onClick={() => this.answerHandler(5)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.randomized_row[4]}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button onClick={() => this.answerHandler(6)}> F</button>
+                            </td>
+                            <td onClick={() => this.answerHandler(6)}>    {(this.state.rows.length < 1) ? "Nothing" : this.state.randomized_row[5]}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <div>
+                        <button onClick={() => this.previousPage()}>Previous Page</button>
+                        <button onClick={() => this.nextPage()}>Next Page</button>
+                    </div>
+                    <div>
+                        Current page
+                        is {this.state.current_page} of {(this.state.rows.length < 1) ? "Unknown" : this.state.rows.length}
+                    </div>
+                    <div>
+                        Change page to: <textarea onChange={(event => this.textToPage(event))}>55</textarea> (Then
+                        Previous Page or Next Page to work around bug)
+                    </div>
+                    <div>
+                        <h1>  {this.state.answerStatus}</h1>
+                    </div>
+
                 </div>
-                <div>
-                    Current page is  {this.state.current_page}  of {(this.state.rows.length < 1) ? "Unknown" : this.state.rows.length}
-                </div>
-                <div>
-                    Change page to: <textarea onChange={(event => this.textToPage(event))}>55</textarea> (Then Previous Page or Next Page to work around bug)
-                </div>
-                <div>
-                    <h1>  {this.state.answerStatus}</h1>
+                {/* className= Tutoring*/}
+                <div className="Result" hidden={this.state.show_result === false}>
+                    <div><h2>-----------------------</h2></div>
+                    <div><h2>Result from your last answer: {this.state.result_text}</h2></div>
+                    <div><h2>Explanation:</h2></div>
+                    <div><h2>{this.state.explanation}</h2></div>
+                    <div><a href={this.state.videos}> Video </a></div>
+                    <div><a href={this.state.pods}> Podcast</a></div>
+                    <div>
+                        <button onClick={() => this.state.is_correct ? this.nextPage() : this.setState({
+                            show_result: false,
+                            result_text: "No result"
+                        })}>
+                            {this.state.is_correct ? "Next Questions" : "Clear Result"}</button>
+                    </div>
+
+
                 </div>
             </div>
         )
-            ;
     }
 
     nextPage() {
         if (this.state.current_page < (this.state.rows.length - 1)) {
             let new_current_page = this.state.current_page + 1
             let randomized_row = this.setCurrentRow(this.state.rows[new_current_page])
-            this.setState({current_page: new_current_page, randomized_row: randomized_row})
+            this.setState({current_page: new_current_page, randomized_row: randomized_row, show_result: false})
         } else {
             return alert("You are on the last page");
         }
@@ -150,7 +189,7 @@ class App extends Component {
         if (target_page < this.state.rows.length && (target_page > -1)) {
             let new_current_page = target_page
             let randomized_row = this.setCurrentRow(this.state.rows[new_current_page])
-            this.setState({current_page: new_current_page, randomized_row: randomized_row})
+            this.setState({current_page: new_current_page, randomized_row: randomized_row, show_result: false})
         } else {
             return alert("Not a valid page select between 0 and " + (this.state.rows.length - 1));
         }
@@ -160,7 +199,7 @@ class App extends Component {
         if (this.state.current_page > 0) {
             let new_current_page = this.state.current_page - 1
             let randomized_row = this.setCurrentRow(this.state.rows[new_current_page])
-            this.setState({current_page: new_current_page, randomized_row: randomized_row})
+            this.setState({current_page: new_current_page, randomized_row: randomized_row, show_result: false})
         } else {
             return alert("You are on the first page");
 
@@ -195,39 +234,42 @@ class App extends Component {
                 videos: videos,
                 pods: pods
             })
-            // return alert("Here is the explanation: \n" + explanation + "\nVideos: " + videos + "\nPodcasts" + pods);
             return random_answers
         }
     }
 
-    my_anwser_handler(id) {
+    answerHandler(id) {
         // Zero is the position of the correct answer in the original order of the questions. Then we randomize the answers.
         // We keep the order we randomized them in random_mapping
         let isCorrect = (0 === this.state.random_mapping[id - 1])
         let guess_count_ = this.state.guess_count + 1
         let correct_count_ = this.state.correct_count
         let letter_guess = String.fromCharCode(64 + id)
-        let right_wrong = isCorrect ? letter_guess + " is Correct!  " : letter_guess + " is WRONG!!! ";
         if (isCorrect) {
             correct_count_ = correct_count_ + 1
         }
-        let percent = (correct_count_ / guess_count_) * 100
-        let answerStatus_ = "You have " + correct_count_ + " correct answers and have guessed " + guess_count_ + " times. You are " + percent + "%  enlightened by our calculation"
+        let result_text = isCorrect ? letter_guess + correct_answer_response_text : letter_guess + incorrect_answer_response_text;
+        //let percent = (correct_count_ / guess_count_) * 100
+        let answerStatus_ = shared_answer_response_text + correct_count_ + "/ " + guess_count_
         this.setState({
             guess_count: guess_count_,
             answerStatus: answerStatus_,
-            correct_count: correct_count_
+            correct_count: correct_count_,
+            show_result: true,
+            result_text: result_text,
+            isCorrect: isCorrect,
         })
-        return alert(right_wrong + answerStatus_ + "\n  Explanation : " + this.state.explanation + "\nVideos: " + this.state.videos + "\nPodcasts" + this.state.pods);
+        return alert(result_text+ "\nExplanation : \n" + this.state.explanation);
     }
 
     textToPage(param) {
         let readValue = param.target.value;
         let page_number = Number(readValue);
         if ((this.state.rows.length > 0) && (page_number < this.state.rows.length)) {
-          this.setState(
-              { current_page: page_number
-        })
+            this.setState(
+                {
+                    current_page: page_number
+                })
         }
     }
 }
