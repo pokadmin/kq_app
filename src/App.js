@@ -95,7 +95,7 @@ class App extends Component {
 */}
 
                 <div className="Tutoring">
-                    <table style={{minHeight: 300, height: 300, verticalAlign: "bottom"}}>
+                    <table style={{margin:20px,minHeight: 300, height: 300, verticalAlign: "bottom"}}>
                         <tbody>
                         <tr>
                             <td>
