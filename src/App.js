@@ -1,5 +1,5 @@
-import './App.css';
-// import { useTable } from 'react-table'
+import './App.css'
+import './bootstrap.min.css'
 import React, {Component} from 'react';
 import {readRemoteFile} from "react-papaparse";
 
@@ -81,18 +81,16 @@ class App extends Component {
 
   render() {
     return (
-      <div className="App">
-        <header className="App-header" style={{maxHeight: 150, minHeight: 150}}>
-          <div>
-            <h2 style={{verticalAlign: "bottom"}}>
+      <div className="container mt-3"  style={{backgroundColor:"#eee"}}>
+         <h2>Knowledge Quiz</h2>
+          <p>Click a button A to F to select an answer</p>
+          <div  className="d-flex p-3 bg-white text-dark" style={{marginBottom:10}}>
+            <h3 style={{textAlign: "center"}}>
+              {/*This is the question*/}
               {(this.state.rows.length < 1) ? "Nothing" : this.state.rows[this.state.current_page][0]}
-            </h2>
+            </h3>
           </div>
-        </header>
 
-        {/*
-                                Think it is better to leave it up. <div hidden={this.state.show_result} className="Tutoring">
-*/}
 
         <div className="Tutoring">
           <table style={{margin: 20, minHeight: 300, height: 300, verticalAlign: "bottom"}}>
@@ -158,7 +156,6 @@ class App extends Component {
           </div>
 
         </div>
-        {/* className= Tutoring*/}
         <div className="Result" hidden={this.state.show_result === false}>
           <div><h2>-----------------------</h2></div>
           <div><h2>Result from your last answer: {this.state.result_text}</h2></div>
